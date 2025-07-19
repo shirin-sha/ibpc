@@ -1,0 +1,107 @@
+'use client';
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import Image from 'next/image';
+import Link from 'next/link'; // Added for the registration link
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await signIn('credentials', { 
+        email, 
+        password, 
+        redirect: false 
+      });
+      
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+      
+      if (res.ok) {
+        toast.success('Logged in');
+        router.push('/dashboard');
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 to-slate-900">
+      <div className="w-full max-w-md -mt-20"> {/* Added negative margin to adjust vertical position */}
+        <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Logo and Header */}
+          <div className="text-center mb-6"> {/* Reduced bottom margin */}
+           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full  ">
+            {/* Replace with actual image path if needed */}
+            <img src="/logo.png" alt="IBPC Logo" className="w-20 h-20" />
+          </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Welcome back</h2>
+            {/* <p className="text-sm text-gray-600">Continue to IBPC Admin</p> */}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5"> {/* Slightly reduced spacing */}
+            {/* Email Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                         placeholder-gray-400"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm
+                         focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                         placeholder-gray-400"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg hover:bg-[#303030] 
+                       transition-colors duration-200 font-medium mt-2" /* Added top margin */
+            >
+              Log in
+            </button>
+          </form>
+
+          {/* Registration Link */}
+          <p className="text-center text-sm text-gray-600 mt-4">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-blue-500 hover:text-blue-700 font-medium">
+              Register
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
