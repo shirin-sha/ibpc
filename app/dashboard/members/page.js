@@ -22,7 +22,6 @@ export default function Directory() {
     <Layout>
         {console.log('Session Data:', session)} 
           <MembersTable members={members} isAdmin={session?.user?.role=='admin'}/>
-    
     </Layout>
   );
 }

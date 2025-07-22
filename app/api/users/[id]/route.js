@@ -4,10 +4,44 @@ import User from '../../../../lib/models/User';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
-import fs from 'fs/promises';
 import path from 'path';
+import s3 from '@/lib/b2Client';
+
 // app/api/users/[id]/route.js
-import { writeFile } from 'fs/promises';
+// ... (rest of your imports and code)
+
+// Updated uploadToB2 function
+async function uploadToB2(file, prefix = 'photo') {
+  const bucketName = process.env.B2_BUCKET_NAME;
+  if (!bucketName) throw new Error('B2_BUCKET_NAME is not configured');
+
+  const ext = path.extname(file.name).toLowerCase() || '.jpg';
+  const filename = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2)}${ext}`;
+  const key = `uploads/${filename}`; // This is the key we'll store
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  try {
+    await s3.putObject({
+      Key: key,
+      Body: buffer,
+      Bucket: bucketName,
+      ContentType: file.type,
+      // Optional: Set ACL if you ever make it public, but keep private for now
+      // ACL: 'public-read' // DO NOT USE if bucket should stay private
+    }).promise();
+
+    return key; // Return just the key (not full URL)
+  } catch (error) {
+    console.error('B2 Upload Error:', error);
+    throw new Error(`B2 Upload failed: ${error.message}`);
+  }
+}
+
+// In your PATCH handler, when setting updateData[key] = await uploadToB2(value, key);
+// This will now store the key (e.g., 'uploads/photo-123.jpg') in user.photo or user.logo
+
+// app/api/users/[id]/route.js
+// ... (rest of your code)
 
 export async function GET(req, { params }) {
   const session = await getServerSession(authOptions);
@@ -23,16 +57,33 @@ export async function GET(req, { params }) {
     await connectDB();
     const user = await User.findById(params.id).select('-password');
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    // Generate presigned URLs for photo and logo if they exist
+    const bucketName = process.env.B2_BUCKET_NAME;
+    const expiresIn = 3600; // 1 hour expiration
+
+    if (user.photo) {
+      user.photo = s3.getSignedUrl('getObject', {
+        Bucket: bucketName,
+        Key: user.photo, // This is the stored key (e.g., 'uploads/photo-123.jpg')
+        Expires: expiresIn,
+      });
+    }
+
+    if (user.logo) {
+      user.logo = s3.getSignedUrl('getObject', {
+        Bucket: bucketName,
+        Key: user.logo, // Assuming you have a logo field
+        Expires: expiresIn,
+      });
+    }
+
     return NextResponse.json(user);
   } catch (error) {
-    console.error('GET Error:', error);  // Log server-side errors
+    console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
-
-
-
-
 
 export async function PATCH(req, { params }) {
   // Ensure database connection
@@ -66,20 +117,18 @@ export async function PATCH(req, { params }) {
         const socialKey = key.split('.')[1];
         socialLinks[socialKey] = value;
       } else if (key === 'photo' || key === 'logo') {
-        // Handle file uploads
-        if (value && value instanceof File) {
-          const bytes = await value.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          
-          // Generate unique filename
-          const filename = `${key}_${Date.now()}_${value.name}`;
-          const uploadPath = path.join(process.cwd(), 'public', 'uploads', filename);
-          
-          // Write file
-          await writeFile(uploadPath, buffer);
-          
-          // Store file path in update data
-          updateData[key] = `/uploads/${filename}`;
+        // Handle file uploads with B2
+        if (value && value instanceof File && value.size > 0) {
+          try {
+            const fileUrl = await uploadToB2(value, key);
+            updateData[key] = fileUrl;
+          } catch (error) {
+            console.error(`Error uploading ${key}:`, error);
+            return NextResponse.json({ 
+              error: `Failed to upload ${key}`, 
+              details: error.message 
+            }, { status: 500 });
+          }
         }
       } else {
         // Handle other fields

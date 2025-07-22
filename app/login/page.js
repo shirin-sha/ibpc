@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link'; // Added for the registration link
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid'; // or /outline
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -67,27 +70,41 @@ export default function Login() {
             </div>
 
             {/* Password Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm
-                         focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
-                         placeholder-gray-400"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
+    <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+    Password
+  </label>
+  <div className="relative">
+    <input
+      type={showPassword ? 'text' : 'password'}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm
+               focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+               placeholder-gray-400"
+      placeholder="Enter your password"
+      required
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword(!showPassword)}
+      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 cursor-pointer"
+    >
+      {showPassword ? (
+        <EyeSlashIcon className="h-5 w-5" />
+      ) : (
+        <EyeIcon className="h-5 w-5" />
+      )}
+    </button>
+  </div>
+</div>
+
 
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg hover:bg-[#303030] 
-                       transition-colors duration-200 font-medium mt-2" /* Added top margin */
+              className="cursor-pointer w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg hover:bg-[#303030] 
+                       transition-colors duration-200 font-medium mt-2" /* Added top margin */ 
             >
               Log in
             </button>

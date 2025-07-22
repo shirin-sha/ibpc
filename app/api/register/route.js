@@ -4,8 +4,8 @@ import nodemailer from 'nodemailer';
 import Registration from '../../../lib/models/Registration';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
-import fs from 'fs/promises';
 import path from 'path';
+import s3 from '@/lib/b2Client';
 
 // Updated sendMail function (unchanged)
 async function sendMail({ to, subject, text }) {
@@ -40,68 +40,102 @@ async function sendMail({ to, subject, text }) {
   }
 }
 
-// Helper function to save photo locally
-async function savePhotoLocally(file) {
+// Helper function to add signed URLs to registration(s) for photo
+// (Adapted from addSignedUrls in app/api/users/route.js; handles registrations)
+async function addSignedUrls(items) {
+  const bucketName = process.env.B2_BUCKET_NAME;
+  const expiresIn = 3600; // 1 hour expiration (adjust as needed)
+  const fallbackImage = null; // Or set to '/default-avatar.png' for a local fallback
+
+  // Handle single item or array
+  const itemArray = Array.isArray(items) ? items : [items];
+
+  for (let item of itemArray) {
+    // Helper to generate signed URL with error handling
+    const generateSignedUrl = (key) => {
+      return new Promise((resolve, reject) => {
+        s3.getSignedUrl(
+          'getObject',
+          { Bucket: bucketName, Key: key, Expires: expiresIn },
+          (err, url) => {
+            if (err) reject(err);
+            else resolve(url);
+          }
+        );
+      });
+    };
+
+    // Handle photo (assuming 'photo' is the only image field; add more if needed)
+    if (item.photo) {
+      try {
+        item.photo = await generateSignedUrl(item.photo);
+      } catch (error) {
+        console.error(`Signed URL Error for photo (key: ${item.photo}):`, error);
+        if (error.code === 'NoSuchKey') {
+          item.photo = fallbackImage;
+        } else {
+          item.photo = fallbackImage;
+        }
+      }
+    }
+  }
+
+  // If single item, return the object; else return array
+  return Array.isArray(items) ? itemArray : itemArray[0];
+}
+
+// Updated uploadToB2 function: Returns KEY instead of full URL
+async function uploadToB2(file) {
+  const bucketName = process.env.B2_BUCKET_NAME;
+  if (!bucketName) throw new Error('B2_BUCKET_NAME is not configured');
+
+  const ext = path.extname(file.name).toLowerCase() || '.jpg';
+  const filename = `photo-${Date.now()}-${Math.random().toString(36).substring(2)}${ext}`;
+  const key = `uploads/${filename}`; // Return this key
+  const buffer = Buffer.from(await file.arrayBuffer());
+
   try {
-    // Generate unique filename
-    const ext = path.extname(file.name) || '.jpg';
-    const filename = `photo-${Date.now()}-${Math.random().toString(36).substring(2)}${ext}`;
-    const filePath = path.join(process.cwd(), 'public', 'uploads', filename);
+    await s3.putObject({
+      Key: key,
+      Body: buffer,
+      Bucket: bucketName,
+      ContentType: file.type // Add content type
+    }).promise();
 
-    // Convert file to buffer and save
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    // Return the public URL path
-    return `/uploads/${filename}`;
+    return key; // Return KEY (e.g., 'uploads/photo-123.jpg')
   } catch (error) {
-    console.error('Photo save error:', error);
-    throw error;
+    console.error('B2 Upload Error:', error);
+    throw new Error(`B2 Upload failed: ${error.message}`);
   }
 }
 
-// POST: Create registration with photo upload
+// Update the POST handler: Store KEY in registration
 export async function POST(request) {
   try {
     await connectDB();
-
-    // Parse FormData (handles both file and text fields)
     const formData = await request.formData();
     const photo = formData.get('photo');
+    const data = { ...Object.fromEntries(formData.entries()) };
     
-    // Extract all form fields except photo
-    const data = {};
-    for (const [key, value] of formData.entries()) {
-      if (key !== 'photo') {
-        data[key] = value;
-      }
-    }
-
-    // Handle photo upload if provided
-    let photoUrl = '';
+    let photoKey = ''; // Changed to photoKey for clarity
     if (photo && photo.size > 0) {
-      photoUrl = await savePhotoLocally(photo);
-      console.log('Photo saved:', photoUrl);
+      photoKey = await uploadToB2(photo); // Get KEY from B2 upload
     }
 
-    // Create registration with photo URL
     const registration = new Registration({ 
       ...data, 
-      photo: photoUrl,
-      benefitFromIbpc: data.benefit, // Map form field names
+      photo: photoKey, // Store KEY
+      benefitFromIbpc: data.benefit,
       contributeToIbpc: data.contribution,
     });
     
     await registration.save();
-    console.log('Registration saved successfully');
-    
     return NextResponse.json({ 
       message: 'Registration saved successfully',
-      photoUrl: photoUrl 
+      photoKey // Return key for reference (optional)
     }, { status: 201 });
     
   } catch (error) {
-    console.error('Registration error:', error);
     return NextResponse.json({ 
       message: 'Server error', 
       error: error.message 
@@ -109,14 +143,23 @@ export async function POST(request) {
   }
 }
 
-// GET: List all registrations (unchanged)
+// GET: List all registrations (with signed URLs)
 export async function GET() {
-  await connectDB();
-  const registrations = await Registration.find({}).sort({ createdAt: -1 });
-  return NextResponse.json(registrations);
+  try {
+    await connectDB();
+    let registrations = await Registration.find({}).sort({ createdAt: -1 });
+    
+    // Add signed URLs
+    registrations = await addSignedUrls(registrations);
+    
+    return NextResponse.json(registrations);
+  } catch (error) {
+    console.error('GET Error:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
 }
 
-// PUT: Approve registration and create user (updated to include photo)
+// PUT: Approve registration and create user (store KEY in user)
 export async function PUT(req) {
   try {
     await connectDB();
@@ -156,7 +199,7 @@ export async function PUT(req) {
       benefitFromIbpc: reg.benefitFromIbpc,
       contributeToIbpc: reg.contributeToIbpc,
       proposers: reg.proposers ? reg.proposers.join(', ') : 'N/A',
-      photo: reg.photo, // Include photo in user record
+      photo: reg.photo || '', // Store KEY (or empty if none)
     });
     await user.save();
     console.log('User created successfully');
