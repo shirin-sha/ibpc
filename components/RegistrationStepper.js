@@ -151,62 +151,65 @@ export default function RegistrationStepper({ onSubmit }) {
   const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-red-500 focus:border-red-500 placeholder-gray-400";
 
   return (
-<div className="max-w-xl mx-auto px-4 md:px-6 lg:px-8">
-  
+    <div className="max-w-5xl mx-auto px-6 md:px-10">
+      {/* Heading */}
+      <h1 className="text-black text-2xl font-bold text-center flex-grow mx-2 mb-8">
+        Register for IBPC Membership
+      </h1>
 
-    {/* Heading */}
-    <h1 className="text-black text-2xl font-bold text-center flex-grow mx-2 mb-8">
-      Register for IBPC Membership
-    </h1>
-
-    {/* Empty div to balance flex spacing */}
-    <div className="w-20" />
-
-
-  <div className="mb-4">
+      {/* Stepper UI */}
+      <div className="mb-4">
+        {/* Desktop Stepper */}
         <div className="hidden md:block relative">
-          <div className="absolute top-3 left-[20px] right-[20px] h-0.5 bg-gray-200">
-            <div 
+          {/* Grey background line. Adjusted padding to align with circle centers */}
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[calc(100%-100px)] h-0.5 bg-gray-200">
+            {/* Green progress line */}
+            <div
               className="h-full bg-green-600 transition-all duration-300"
-              style={{ 
-                width: `calc(${(step / (steps.length - 1)) * 100}% - 40px)`,
-                marginLeft: '20px'
-              }}
+              style={{ width: `${(step / (steps.length - 1)) * 100}%` }}
             />
           </div>
+          {/* Step circles and titles */}
           <div className="relative flex justify-between">
-            {steps.map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center
-                    ${idx === step 
-                      ? "bg-red-600 text-white"
-                      : idx < step 
-                        ? "bg-green-500 text-white" 
-                        : "bg-gray-100 text-gray-500"}`}
-                >
-                  {idx < step ? (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <span className="text-xs font-medium">{idx + 1}</span>
-                  )}
+            {steps.map((item, idx) => {
+              const isActive = idx === step;
+              const isComplete = idx < step;
+
+              return (
+                <div key={idx} className="flex flex-col items-center z-10"> {/* z-10 ensures circles are above line */}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center
+                      ${isComplete
+                        ? "bg-green-500 text-white"
+                        : isActive
+                          ? "bg-gray-600 text-white"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                  >
+                    {isComplete ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <span className="text-xs font-medium">{idx + 1}</span>
+                    )}
+                  </div>
+                  <span className="mt-1 text-xs font-medium text-gray-500 text-center">{item.title}</span>
                 </div>
-                <span className="mt-1 text-xs font-medium text-gray-500">{item.title}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {/* Mobile Stepper */}
         <div className="md:hidden flex items-center justify-between px-2">
           <span className="text-sm font-medium text-gray-500">Step {step + 1} of {steps.length}</span>
           <span className="text-sm font-medium text-gray-900">{steps[step].title}</span>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-4 md:p-6">
+      <div className="bg-white rounded-xl px-10 py-4 md:px-12 md:py-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          
           {step === 0 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal & Business Information</h2>
@@ -266,8 +269,8 @@ export default function RegistrationStepper({ onSubmit }) {
                       accept="image/*"
                       className="hidden"
                     />
-                    <span className="px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700 
-                                    border border-gray-300 rounded hover:bg-gray-300">
+                    <span className="px-3 py-1.5 text-xs font-medium bg-gray-200 text-gray-700
+                                       border border-gray-300 rounded hover:bg-gray-300">
                       Upload Photo
                     </span>
                   </label>
@@ -435,7 +438,7 @@ export default function RegistrationStepper({ onSubmit }) {
               <div className="space-y-3">
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    I hereby declare that all information provided is true and accurate. 
+                    I hereby declare that all information provided is true and accurate.
                     I agree to abide by the rules and regulations of IBPC.
                   </p>
                 </div>
@@ -449,7 +452,7 @@ export default function RegistrationStepper({ onSubmit }) {
                     required
                   />
                   <span className="text-sm text-gray-600">
-                    I accept the terms and conditions and consent to the processing of my information 
+                    I accept the terms and conditions and consent to the processing of my information
                     according to IBPC's privacy policy.
                   </span>
                 </label>
@@ -462,8 +465,8 @@ export default function RegistrationStepper({ onSubmit }) {
               type="button"
               onClick={prevStep}
               disabled={step === 0}
-              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 
-                       hover:bg-gray-50 disabled:opacity-50 text-sm"
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700
+                         hover:bg-gray-50 disabled:opacity-50 text-sm"
             >
               Back
             </button>
@@ -472,8 +475,8 @@ export default function RegistrationStepper({ onSubmit }) {
                 type="button"
                 onClick={nextStep}
                 disabled={!isStepValid()}
-                className={`w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg 
-                        hover:bg-gray-800 transition-colors text-sm ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg
+                           hover:bg-gray-800 transition-colors text-sm ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Continue
               </button>
@@ -481,8 +484,8 @@ export default function RegistrationStepper({ onSubmit }) {
               <button
                 type="submit"
                 disabled={!isStepValid() || isSubmitting}
-                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg 
-                         hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
+                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg
+                            hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Application'}
               </button>
@@ -490,16 +493,17 @@ export default function RegistrationStepper({ onSubmit }) {
           </div>
         </form>
       </div>
-<div className="mt-6 text-center">
-  <p className="text-sm md:text-base text-gray-700">
-    Already have an account?{" "}
-    <Link
-      href="/login"
-      className="text-blue-600 font-semibold hover:underline"
-    >
-      Login
-    </Link>
-  </p>
-</div>    </div>
+      <div className="mt-6 text-center">
+        <p className="text-sm md:text-base text-gray-700">
+         Already a member?{" "}
+          <Link
+            href="/login"
+            className="text-blue-600 font-semibold hover:underline"
+          >
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
