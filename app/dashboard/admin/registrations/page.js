@@ -1,5 +1,4 @@
 'use client';
-import Layout from '@/components/Layout';
 import { useEffect, useState } from 'react';
 import RegistrationTable from '@/components/RegistrationRequests';
 
@@ -24,8 +23,6 @@ export default function Registrations() {
     fetchRegistrations();
   }, []);
   return (
-    <Layout>
       <RegistrationTable data={registrations} refreshData={fetchRegistrations} />
-    </Layout>
   );
 }

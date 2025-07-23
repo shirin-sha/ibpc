@@ -1,5 +1,4 @@
 'use client';
-import Layout from '@/components/Layout';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -43,7 +42,6 @@ export default function AdminInquiries() {
   if (loading) return <div>Loading...</div>;
 
   return (
-  <Layout>
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -123,6 +121,5 @@ export default function AdminInquiries() {
         </div>
       </div>
     </div>
-  </Layout>
   );
 }

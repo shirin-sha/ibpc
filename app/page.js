@@ -28,6 +28,7 @@ export default function Home() {
 
   return (
     <div>
+      {/* Home page */}
       <Login />
       {/* <motion.form
         initial={{ opacity: 0, y: 50 }}

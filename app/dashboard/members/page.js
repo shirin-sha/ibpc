@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import MembersTable from '@/components/MembersTable';
-import Layout from '@/components/Layout';
 import { useSession } from 'next-auth/react';
 
 export default function Directory() {
@@ -19,9 +18,6 @@ export default function Directory() {
   }, [query]);
 
   return (
-    <Layout>
-        {console.log('Session Data:', session)} 
           <MembersTable members={members} isAdmin={session?.user?.role=='admin'}/>
-    </Layout>
   );
 }

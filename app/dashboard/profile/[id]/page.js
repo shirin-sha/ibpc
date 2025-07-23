@@ -1,84 +1,240 @@
 'use client';
-import { useState, useEffect } from 'react';
-import ProfileForm from '@/components/ProfileForm';
-import { useSession } from "next-auth/react";
-import { useParams } from 'next/navigation';  // Import for URL params
-import Layout from '@/components/Layout';
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
 
-export default function ProfilePage() {
-    const [user, setUser] = useState(null);
-    const [error, setError] = useState(null);  // New: For handling fetch errors (e.g., 404)
-    const [loading, setLoading] = useState(true);
-    const { data: session, status } = useSession();  // Include 'status' to handle loading reliably
-    
-    const params = useParams();  // Get dynamic params from URL
-    let id = params.id;  // Use ID from URL params (e.g., /profile/[id])
-    
-    // Fallback to session ID if no URL param is provided (e.g., for current user's profile)
-    // if (!id && session?.user?.id) {
-    //     id = session.user.id;
-    // }
+export default function ViewProfile() {
+  const { id } = useParams();
+  const router = useRouter();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (status === 'loading' || !id) {
-            console.log('Waiting for session to load or ID from URL. ID not ready yet:', id);  // Debug log
-            return;  // Skip fetch until id is available
-        }
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`/api/users/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch profile');
+        const data = await res.json();
+        setProfile(data);
+      } catch (error) {
+        toast.error(error.message);
+        router.push('/dashboard/members');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [id, router]);
 
-        // Optional: Security check (e.g., only allow admins to view other profiles)
-        // const isAdmin = session?.user?.role === 'admin';
-        // const isSelf = id === session?.user?.id;
-        // if (!isAdmin && !isSelf) {
-        //     setError('Forbidden: You can only view your own profile.');
-        //     setLoading(false);
-        //     return;
-        // }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
 
-        console.log('Fetching user with ID:', id);  // Debug log
+  if (!profile) return <div className="text-center py-10">Profile not found</div>;
 
-        setLoading(true);  // Reset loading state
-        setError(null);    // Clear previous errors
+  return (
+    <div>
+      <div>
+        {/* Back Button */}
+        <Link href="/dashboard/members" className="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mb-6 transition-colors">
+          <ArrowLeftIcon className="w-5 h-5 mr-2" />
+          Back to Members
+        </Link>
 
-        fetch(`/api/users/${id}`)
-            .then(res => {
-                if (!res.ok) {
-                    // Handle non-200 responses (e.g., 404, 401, 403)
-                    throw new Error(`Fetch failed with status ${res.status}: ${res.statusText}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);  // Handle API-specific errors (e.g., "User not found")
-                }
-                setUser(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Fetch Error:', err.message);  // Log for debugging
-                setError(err.message);  // Store error for UI display
-                setLoading(false);
-            });
-    }, [id, status]);  // Depend on id and status to re-run when they change
-
-    // Optional: Debug session changes (uncomment if needed)
-    // useEffect(() => {
-    //     console.log('Session updated:', session);
-    // }, [session]);
-
-    // Handle loading, error, and unauthenticated states
-    if (status === 'loading' || loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error} (Check console for details or try refreshing)</div>;
-    if (!session || !user) return <div>Error: Unable to load profile. Please log in again.</div>;
-
-    const isAdmin = session?.user?.role === 'admin';  // Dynamic based on session
-
-    return (
-        <Layout>
-            <div className="max-w-4xl mx-auto my-8 bg-white shadow-lg rounded-xl p-8 border border-gray-200">
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-6">My Profile</h1>
-                <ProfileForm user={user} isAdmin={isAdmin} />
+        {/* Profile Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
+        >
+          {/* Header Section */}
+          <div className="relative h-48 bg-gradient-to-r from-gray-500 to-gray-600">
+            <div className="absolute bottom-0 left-8 transform translate-y-1/2">
+              <img
+                src={profile.photo || '/logo.png'}
+                alt={profile.name}
+                className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+              />
             </div>
-        </Layout>
-    );
+          </div>
+
+          {/* Name and Basic Info */}
+          <div className="pt-16 pb-6 px-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.name}</h1>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">
+              {profile.profession} at {profile.companyName}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Member ID: {profile._id?.slice(-6) || 'N/A'}
+            </p>
+          </div>
+
+          {/* Sections Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-8 pb-8">
+            {/* Personal Info Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Personal Information</h2>
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Profession</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Passport Number</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Civil ID</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Sponsor Name</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.sponsorName || 'N/A'}</dd>
+                </div>
+              </dl>
+            </motion.div>
+
+            {/* Company Info Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Information</h2>
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Company Name</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Business Activity</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.businessActivity || 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-600 dark:text-gray-300 mb-1">Company Brief</dt>
+                  <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
+                </div>
+              </dl>
+            </motion.div>
+
+            {/* Identification Details Card - NEW */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <IdentificationIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                Identification Details
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Passport Number</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Civil ID</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
+                  </div>
+                </div>
+             
+              </div>
+            </motion.div>
+
+            {/* Contact Info Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contact Details</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3">
+                  <EnvelopeIcon className="w-5 h-5 text-blue-500" />
+                  <span>{profile.email || 'N/A'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <PhoneIcon className="w-5 h-5 text-green-500" />
+                  <span>Mobile: {profile.mobile || 'N/A'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <PhoneIcon className="w-5 h-5 text-green-500" />
+                  <span>Office: {profile.officePhone || 'N/A'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <GlobeAltIcon className="w-5 h-5 text-purple-500" />
+                  <span>Address: {profile.address || 'N/A'}</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Sponsorship Card - NEW */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <UserGroupIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+                Sponsorship
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               
+                {/* Add more sponsorship details if available in your profile data */}
+            
+                  <div className="space-y-3">
+                    {profile.proposer1 && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-600 dark:text-gray-300">First Proposer:</dt>
+                        <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer1}</dd>
+                      </div>
+                    )}
+                    {profile.proposer2 && (
+                      <div className="flex justify-between">
+                        <dt className="text-gray-600 dark:text-gray-300">Second Proposer:</dt>
+                        <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer2}</dd>
+                      </div>
+                    )}
+                  </div>
+               
+              </div>
+            </motion.div>
+
+            {/* Social Media Card */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Social Media</h2>
+              <div className="flex space-x-6">
+                {profile.social?.linkedin && <a href={profile.social.linkedin} className="text-blue-600 hover:text-blue-800">LinkedIn</a>}
+                {profile.social?.instagram && <a href={profile.social.instagram} className="text-pink-600 hover:text-pink-800">Instagram</a>}
+                {profile.social?.twitter && <a href={profile.social.twitter} className="text-blue-400 hover:text-blue-600">Twitter/X</a>}
+                {profile.social?.facebook && <a href={profile.social.facebook} className="text-blue-600 hover:text-blue-800">Facebook</a>}
+                {!Object.keys(profile.social || {}).length && <p className="text-gray-500">No social links available</p>}
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
 }

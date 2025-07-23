@@ -29,7 +29,6 @@ export default function RegistrationStepper({ onSubmit }) {
     officePhone: "",
     residencePhone: "",
     mobile: "",
-    fax: "",
     email: "",
     benefit: "",
     contribution: "",
@@ -63,10 +62,7 @@ export default function RegistrationStepper({ onSubmit }) {
           emailRegex.test(form.email)
         );
       case 3:
-        return (
-          form.benefit.trim() &&
-          form.contribution.trim()
-        );
+        return true; // Always valid since fields are optional
       case 4:
         return (
           form.proposer1.trim() &&
@@ -133,7 +129,7 @@ export default function RegistrationStepper({ onSubmit }) {
         setForm({
           fullName: "", companyName: "", profession: "", businessActivity: "",
           sponsorName: "", passportNumber: "", civilId: "", address: "",
-          officePhone: "", residencePhone: "", mobile: "", fax: "", email: "",
+          officePhone: "", residencePhone: "", mobile: "", email: "",
           benefit: "", contribution: "", proposer1: "", proposer2: "",
           photo: null, consent: false,
         });
@@ -374,11 +370,11 @@ export default function RegistrationStepper({ onSubmit }) {
 
           {step === 3 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Details</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Details (Optional)</h2>
               <div className="grid gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    How would you benefit from IBPC membership?
+                    How would you benefit from IBPC membership? 
                   </label>
                   <textarea
                     name="benefit"
@@ -386,7 +382,6 @@ export default function RegistrationStepper({ onSubmit }) {
                     onChange={handleChange}
                     className={inputClass}
                     rows="3"
-                    required
                   />
                 </div>
                 <div>
@@ -399,7 +394,6 @@ export default function RegistrationStepper({ onSubmit }) {
                     onChange={handleChange}
                     className={inputClass}
                     rows="3"
-                    required
                   />
                 </div>
               </div>

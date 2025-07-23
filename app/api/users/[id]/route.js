@@ -47,11 +47,11 @@ export async function GET(req, { params }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const isAdmin = session.user.role === 'admin';
-  const isSelf = session.user.id === params.id.toString();
-  if (!isAdmin && !isSelf) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  // const isAdmin = session.user.role === 'admin';
+  // const isSelf = session.user.id === params.id.toString();
+  // if (!isAdmin && !isSelf) {
+  //   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // }
 
   try {
     await connectDB();

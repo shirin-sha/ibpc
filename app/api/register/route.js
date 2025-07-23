@@ -195,10 +195,10 @@ export async function PUT(req) {
       officePhone: reg.officePhone,
       residencePhone: reg.residencePhone,
       mobile: reg.mobile,
-      fax: reg.fax,
       benefitFromIbpc: reg.benefitFromIbpc,
       contributeToIbpc: reg.contributeToIbpc,
-      proposers: reg.proposers ? reg.proposers.join(', ') : 'N/A',
+      proposer1: reg.proposer1,
+      proposer2: reg.proposer2,
       photo: reg.photo || '', // Store KEY (or empty if none)
     });
     await user.save();
@@ -211,7 +211,7 @@ export async function PUT(req) {
     await sendMail({
       to: reg.email,
       subject: 'Your IBPC Membership Credentials',
-      text: `Dear ${reg.fullName || reg.name},\n\nYour IBPC membership has been approved.\n\nMember ID: ${memberId}\nUsername: ${username}\nPassword: ${rawPassword}\n\nPlease log in and change your password after first login.\n\nRegards,\nIBPC Kuwait`
+      text: `Dear ${reg.fullName || reg.name},\n\nYour IBPC membership has been approved.\n\nMember ID: ${memberId}\nUsername: ${username}\nPassword: ${rawPassword}\n\nLogin URL: https://ibpc-nextjs.vercel.app \n\nPlease log in and change your password after first login.\n\nRegards,\nIBPC Kuwait`
     });
 
     return NextResponse.json({ message: 'Member created and credentials sent.' });
