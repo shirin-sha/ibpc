@@ -148,8 +148,8 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-6 pt-8">
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Application Details</h2>
             </div>
-            <div className="sm:col-span-6"><TextAreaField label="How would you benefit from IBPC membership?" name="benefit" value={formData.benefit} onChange={handleChange} rows={3} disabled={isMember} /></div>
-            <div className="sm:col-span-6"><TextAreaField label="How can you contribute to IBPC's objectives?" name="contribution" value={formData.contribution} onChange={handleChange} rows={3} disabled={isMember} /></div>
+            <div className="sm:col-span-6"><TextAreaField label="How would you benefit from IBPC membership?" name="benefit" value={formData.benefitFromIbpc} onChange={handleChange} rows={3} disabled={isMember} /></div>
+            <div className="sm:col-span-6"><TextAreaField label="How can you contribute to IBPC's objectives?" name="contribution" value={formData.contributeToIbpc} onChange={handleChange} rows={3} disabled={isMember} /></div>
 
             {/* Sponsorship Details (from registration) */}
             <div className="sm:col-span-6 pt-8">

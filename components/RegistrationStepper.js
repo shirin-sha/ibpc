@@ -12,7 +12,7 @@ const steps = [
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function RegistrationStepper({ onSubmit }) {
+export default function RegistrationStepper({ onComplete }) {
   const [step, setStep] = useState(0);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,8 +124,9 @@ export default function RegistrationStepper({ onSubmit }) {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Registration submitted successfully!');
-        if (onSubmit) onSubmit(result);
+  if (typeof onComplete === 'function') {
+        onComplete(); // ✅ HERE is where we call it
+      }
         setForm({
           fullName: "", companyName: "", profession: "", businessActivity: "",
           sponsorName: "", passportNumber: "", civilId: "", address: "",

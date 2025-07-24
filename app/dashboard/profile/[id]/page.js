@@ -54,7 +54,7 @@ export default function ViewProfile() {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
         >
           {/* Header Section */}
-          <div className="relative h-48 bg-gradient-to-r from-gray-500 to-gray-600">
+          <div className="relative h-48 bg-gradient-to-r from-gray-800 to-red-500">
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
               <img
                 src={profile.photo || '/logo.png'}

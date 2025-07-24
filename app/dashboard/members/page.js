@@ -6,18 +6,25 @@ import { useSession } from 'next-auth/react';
 export default function Directory() {
   const [members, setMembers] = useState([]);
   const [query, setQuery] = useState('');
- const { data: session, status } = useSession(); 
+  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+
   useEffect(() => {
+    setLoading(true);
     fetch(`/api/users${query ? `?q=${encodeURIComponent(query)}` : ''}`)
-     .then(res => res.json())
+      .then(res => res.json())
       .then(data => {
-        // Filter out admins (assuming each user has a 'role' field)
         const filteredMembers = data.filter(user => user.role !== 'admin');
         setMembers(filteredMembers);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [query]);
 
   return (
-          <MembersTable members={members} isAdmin={session?.user?.role=='admin'}/>
+    <MembersTable
+      members={members}
+      isAdmin={session?.user?.role === 'admin'}
+      loading={loading}
+    />
   );
 }

@@ -30,7 +30,7 @@ export default function Login() {
       
       if (res.ok) {
         toast.success('Logged in');
-        router.push('/dashboard');
+    email=='admin@ibpc.com'? router.push('/dashboard/admin') : router.push('/dashboard');
       }
     } catch (error) {
       toast.error('An error occurred');

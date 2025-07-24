@@ -7,22 +7,27 @@ export default function Registrations() {
   const [loading, setLoading] = useState(true);
 
   const fetchRegistrations = async () => {
+    setLoading(true); // Make sure to set loading true before fetching
     try {
       const res = await fetch('/api/register');
       const data = await res.json();
       setRegistrations(data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching registrations:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Fetch all registrations on mount
   useEffect(() => {
     fetchRegistrations();
   }, []);
+
   return (
-      <RegistrationTable data={registrations} refreshData={fetchRegistrations} />
+    <RegistrationTable
+      data={registrations}
+      refreshData={fetchRegistrations}
+      loading={loading} // Pass loading state
+    />
   );
 }

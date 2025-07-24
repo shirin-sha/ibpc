@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function RegistrationTable({ data, refreshData }) {
+export default function RegistrationTable({ data, refreshData,loading }) {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState(null);
@@ -143,7 +143,21 @@ export default function RegistrationTable({ data, refreshData }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredData.length === 0 ? (
+              {loading ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    {/* Spinner SVG */}
+                    <svg className="animate-spin h-8 w-8 text-indigo-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span className="text-gray-500 dark:text-gray-300">Loading registrations...</span>
+                  </div>
+                </td>
+              </tr>
+            ) :
+            filteredData.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-8 text-center">
                   <div className="text-gray-400 mb-2">
@@ -439,11 +453,11 @@ export default function RegistrationTable({ data, refreshData }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <p className="text-sm font-bold text-gray-700 dark:text-gray-300">How would you benefit from IBPC membership? (Applicant's response):</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.benefit}</p>
+              <p className="text-gray-900 dark:text-white">{selectedRegistration.benefitFromIbpc}</p>
             </div>
             <div className="space-y-2">
               <p className="text-sm font-bold text-gray-700 dark:text-gray-300">How can you contribute to IBPC's objectives? (Applicant's response):</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.contribution}</p>
+              <p className="text-gray-900 dark:text-white">{selectedRegistration.contributeToIbpc}</p>
             </div>
           </div>
         </div>
