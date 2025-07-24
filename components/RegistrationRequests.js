@@ -1,6 +1,7 @@
+'use client';
 import { useState } from 'react';
 
-export default function RegistrationTable({ data, refreshData,loading }) {
+export default function RegistrationTable({ data = [], refreshData, loading }) {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegistration, setSelectedRegistration] = useState(null);
@@ -53,8 +54,8 @@ export default function RegistrationTable({ data, refreshData,loading }) {
     }
   };
 
-  // Filter data based on status and search query
-  const filteredData = data.filter((row) => {
+  // Filter data based on status and search query with null checks
+  const filteredData = (data || []).filter((row) => {
     if (filterStatus !== 'all' && row.status !== filterStatus) {
       return false;
     }
@@ -200,94 +201,84 @@ export default function RegistrationTable({ data, refreshData,loading }) {
                       
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {row.fullName}
+                          {row.fullName || 'N/A'}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {row.profession}
+                          {row.profession || 'N/A'}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {row.companyName}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {row.businessActivity}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Sponsor: {row.sponsorName}
+                  
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <div className="font-medium">{row.companyName || 'N/A'}</div>
+                      <div className="text-gray-500 dark:text-gray-400">{row.designation || 'N/A'}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">{row.businessActivity || 'N/A'}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {row.email}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      M: {row.mobile}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      O: {row.officePhone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Civil ID: {row.civilId}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Passport: {row.passportNumber}
+                  
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <div>{row.email || 'N/A'}</div>
+                      <div className="text-gray-500 dark:text-gray-400">{row.mobile || 'N/A'}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">
+                        Office: {row.officePhone || 'N/A'}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <div>1. {row.proposer1}</div>
-                      <div>2. {row.proposer2}</div>
+                  
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <div>Civil ID: {row.civilId || 'N/A'}</div>
+                      <div className="text-gray-500 dark:text-gray-400">
+                        Passport: {row.passportNumber || 'N/A'}
+                      </div>
                     </div>
                   </td>
+                  
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      <div>1. {row.proposer1 || 'N/A'}</div>
+                      <div>2. {row.proposer2 || 'N/A'}</div>
+                    </div>
+                  </td>
+                  
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       row.status === 'Approved' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' 
-                        : row.status === 'rejected' 
-                        ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' 
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
+                        : row.status === 'Rejected'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
                     }`}>
                       {row.status || 'Pending'}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-center">
-                    <div className="flex  space-x-2">
-                      {/* View Details Button */}
-                      <div className="group relative">
-                        <button 
-                          onClick={() => setSelectedRegistration(row)}
-                          className="inline-block p-2 text-blue-500 hover:text-blue-600 rounded-lg transition-colors"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                            View Details
-                          </span>
-                        </button>
-                      </div>
-
-                      {/* Approve Button (only for pending) */}
-                      {row.status !== 'Approved' && (
-                        <div className="group relative">
-                          <button 
+                  
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex justify-center space-x-2">
+                      <button
+                        onClick={() => setSelectedRegistration(row)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
+                      >
+                        View Details
+                      </button>
+                      {row.status === 'Pending' && (
+                        <>
+                          <button
                             onClick={() => handleApprove(row._id)}
-                            className="inline-block p-2 text-green-500 hover:text-green-600 rounded-lg transition-colors"
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 font-medium text-sm"
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              Approve
-                            </span>
+                            Approve
                           </button>
-                        </div>
+                          <button
+                            onClick={() => handleReject(row._id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 font-medium text-sm"
+                          >
+                            Reject
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -298,222 +289,107 @@ export default function RegistrationTable({ data, refreshData,loading }) {
         </table>
       </div>
 
-      {/* Details Modal */}
-{selectedRegistration && (
-  <div className="fixed inset-0 backdrop-blur-md bg-opacity-80 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100">
-      {/* Modal Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-          <svg className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          Registration Details - {selectedRegistration.fullName}
-        </h2>
-        <button
-          onClick={() => setSelectedRegistration(null)}
-          className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Modal Body - Sectioned with Cards */}
-      <div className="p-6 space-y-8">
-        {/* Personal & Business Info Card */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md">
-          <div className="flex flex-col md:flex-row md:items-start gap-6">
-            {/* Applicant Photo - Positioned at the top */}
-            {selectedRegistration.photo && (
-              <div className="flex flex-col items-center mb-4 md:mb-0">
-                <img
-                  src={selectedRegistration.photo}
-                  alt={`${selectedRegistration.fullName}'s photo`}
-                  className="w-32 h-32 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 cursor-pointer transition-transform duration-200 hover:scale-105"
-                  onClick={() => window.open(selectedRegistration.photo, '_blank')}
-                />
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">Applicant Photo</p>
+      {/* Modal for Registration Details */}
+      {selectedRegistration && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Registration Details - {selectedRegistration.fullName}
+                </h3>
+                <button
+                  onClick={() => setSelectedRegistration(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal Information */}
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">Personal Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Full Name:</span> {selectedRegistration.fullName || 'N/A'}</div>
+                    <div><span className="font-medium">Profession:</span> {selectedRegistration.profession || 'N/A'}</div>
+                    <div><span className="font-medium">Civil ID:</span> {selectedRegistration.civilId || 'N/A'}</div>
+                    <div><span className="font-medium">Passport:</span> {selectedRegistration.passportNumber || 'N/A'}</div>
+                    <div><span className="font-medium">Address:</span> {selectedRegistration.address || 'N/A'}</div>
+                  </div>
+                </div>
+                
+                {/* Company Information */}
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">Company Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Company:</span> {selectedRegistration.companyName || 'N/A'}</div>
+                    <div><span className="font-medium">Designation:</span> {selectedRegistration.designation || 'N/A'}</div>
+                    <div><span className="font-medium">Business Activity:</span> {selectedRegistration.businessActivity || 'N/A'}</div>
+                  </div>
+                </div>
+                
+                {/* Contact Information */}
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">Contact Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Email:</span> {selectedRegistration.email || 'N/A'}</div>
+                    <div><span className="font-medium">Mobile:</span> {selectedRegistration.mobile || 'N/A'}</div>
+                    <div><span className="font-medium">Office Phone:</span> {selectedRegistration.officePhone || 'N/A'}</div>
+                    <div><span className="font-medium">Residence Phone:</span> {selectedRegistration.residencePhone || 'N/A'}</div>
+                  </div>
+                </div>
+                
+                {/* Proposers */}
+                <div>
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">Proposers</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Proposer 1:</span> {selectedRegistration.proposer1 || 'N/A'}</div>
+                    <div><span className="font-medium">Proposer 2:</span> {selectedRegistration.proposer2 || 'N/A'}</div>
+                    <div><span className="font-medium">Sponsor Name:</span> {selectedRegistration.sponsorName || 'N/A'}</div>
+                  </div>
+                </div>
+                
+                {/* IBPC Sections */}
+                <div className="md:col-span-2">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">IBPC Information</h4>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <span className="font-medium">How can you benefit from IBPC:</span>
+                      <p className="mt-1 text-gray-600 dark:text-gray-400">{selectedRegistration.benefitFromIbpc || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">How can you contribute to IBPC:</span>
+                      <p className="mt-1 text-gray-600 dark:text-gray-400">{selectedRegistration.contributeToIbpc || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {selectedRegistration.status === 'Pending' && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+                <button
+                  onClick={() => handleReject(selectedRegistration._id)}
+                  className="px-4 py-2 border border-red-300 text-red-700 rounded-md hover:bg-red-50 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => handleApprove(selectedRegistration._id)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                >
+                  Approve
+                </button>
               </div>
             )}
-            
-            {/* Personal & Business Information */}
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Personal & Business Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Full Name :</p>
-                  <p className="text-gray-900 dark:text-white">{selectedRegistration.fullName}</p>
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Profession & Designation :</p>
-                  <p className="text-gray-900 dark:text-white">{selectedRegistration.profession}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Company Name :</p>
-                  <p className="text-gray-900 dark:text-white">{selectedRegistration.companyName}</p>
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Business Activity Type :</p>
-                  <p className="text-gray-900 dark:text-white">{selectedRegistration.businessActivity}</p>
-                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Kuwaiti Sponsor/Partner Name :</p>
-                  <p className="text-gray-900 dark:text-white">{selectedRegistration.sponsorName}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Supporting Documents Section (Only passport and civil ID) */}
-          <div className="mt-6">
-            <div className="flex flex-wrap gap-4">
-              {selectedRegistration.passportCopy && (
-                <div className="group">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Passport Copy</p>
-                  <img
-                    src={selectedRegistration.passportCopy}
-                    alt={`${selectedRegistration.fullName}'s passport`}
-                    className="w-32 h-auto rounded-lg border-2 border-gray-200 dark:border-gray-600 cursor-pointer transition-transform duration-200 group-hover:scale-105"
-                    onClick={() => window.open(selectedRegistration.passportCopy, '_blank')}
-                  />
-                </div>
-              )}
-              {selectedRegistration.civilIdCopy && (
-                <div className="group">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Civil ID Copy</p>
-                  <img
-                    src={selectedRegistration.civilIdCopy}
-                    alt={`${selectedRegistration.fullName}'s civil ID`}
-                    className="w-32 h-auto rounded-lg border-2 border-gray-200 dark:border-gray-600 cursor-pointer transition-transform duration-200 group-hover:scale-105"
-                    onClick={() => window.open(selectedRegistration.civilIdCopy, '_blank')}
-                  />
-                </div>
-              )}
-            </div>
           </div>
         </div>
-
-        {/* Identification Details Card */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            Identification Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Indian Passport Number :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.passportNumber}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Kuwait Civil ID Number :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.civilId}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Information Card */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-            </svg>
-            Contact Information
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Address in Kuwait :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.address}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Mobile Number :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.mobile}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Office Phone :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.officePhone}</p>
-            </div>
-          </div>
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Email Address :</p>
-            <p className="text-gray-900 dark:text-white">{selectedRegistration.email}</p>
-          </div>
-        </div>
-
-        {/* Application Details Card */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5h6m-6 4h6m-6 4h6m-6 4h6" />
-            </svg>
-            Application Details
-          </h3>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">How would you benefit from IBPC membership? (Applicant's response):</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.benefitFromIbpc}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">How can you contribute to IBPC's objectives? (Applicant's response):</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.contributeToIbpc}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Sponsorship Card */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 shadow-md">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            Sponsorship
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">First IBPC Member Proposer :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.proposer1}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-bold text-gray-700 dark:text-gray-300">Second IBPC Member Proposer :</p>
-              <p className="text-gray-900 dark:text-white">{selectedRegistration.proposer2}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal Footer */}
-      <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky bottom-0 z-10">
-        <button
-          onClick={() => setSelectedRegistration(null)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
-          title="Close this modal"
-        >
-          Close
-        </button>
-        {selectedRegistration.status !== 'Approved' && selectedRegistration.status !== 'rejected' && (
-          <>
-            {/* <button
-              onClick={() => handleReject(selectedRegistration._id)}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              title="Reject this registration"
-            >
-              Reject
-            </button> */}
-            <button
-              onClick={() => handleApprove(selectedRegistration._id)}
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-              title="Approve this registration"
-            >
-              Approve
-            </button>
-          </>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 }

@@ -1,28 +1,27 @@
-'use client'
-import { SessionProvider } from "next-auth/react";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Inter } from 'next/font/google';
+import './globals.css';
+import Providers from '@/components/Providers';
+import { ToastProvider } from '@/components/ui/Toast';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const metadata = {
+  title: 'IBPC Connect - Member Management System',
+  description: 'Professional member management system for IBPC Kuwait',
+};
 
-
-
-export default function RootLayout({ children, session }) {
+export default function RootLayout({ children }) {
   return (
-    <SessionProvider session={session}>
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {children}
-        </body>
-      </html>
-    </SessionProvider>
+    <html lang="en">
+      <body className={`${inter.className} antialiased`}>
+        <Providers>
+          <ToastProvider>
+            <div className="min-h-screen bg-secondary-50 dark:bg-secondary-900">
+              {children}
+            </div>
+          </ToastProvider>
+        </Providers>
+      </body>
+    </html>
   );
 }
