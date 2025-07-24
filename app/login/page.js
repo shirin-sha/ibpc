@@ -10,32 +10,38 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid'; // or /outlin
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await signIn('credentials', { 
-        email, 
-        password, 
-        redirect: false 
-      });
-      
-      if (res?.error) {
-        toast.error(res.error);
-        return;
-      }
-      
-      if (res.ok) {
-        toast.success('Logged in');
-    email=='admin@ibpc.com'? router.push('/dashboard/admin') : router.push('/dashboard');
-      }
-    } catch (error) {
-      toast.error('An error occurred');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const res = await signIn('credentials', { 
+      email, 
+      password, 
+      redirect: false 
+    });
+
+    if (res?.error) {
+      toast.error(res.error);
+      setLoading(false);
+      return;
     }
-  };
+
+    if (res.ok) {
+      toast.success('Logged in');
+      router.push(email === 'admin@ibpc.com' ? '/dashboard/admin' : '/dashboard');
+    }
+  } catch (error) {
+    toast.error('An error occurred');
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 to-slate-900">
@@ -101,13 +107,16 @@ export default function Login() {
 
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              className="cursor-pointer w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg hover:bg-[#303030] 
-                       transition-colors duration-200 font-medium mt-2" /* Added top margin */ 
-            >
-              Log in
-            </button>
+         <button
+  type="submit"
+  disabled={loading}
+  className={`cursor-pointer w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg 
+             transition-colors duration-200 font-medium mt-2 
+             ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#303030]'}`}
+>
+  {loading ? 'Logging in...' : 'Log in'}
+</button>
+
           </form>
 
           {/* Registration Link */}
