@@ -1,392 +1,275 @@
 'use client';
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  EyeIcon, 
-  PencilIcon, 
-  MagnifyingGlassIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  UserIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  BuildingOfficeIcon
-} from '@heroicons/react/24/outline';
-import LoadingSpinner, { TableSkeleton } from './ui/LoadingSpinner';
-import Button from './ui/Button';
-import Input from './ui/Input';
+import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 
-const MembersTable = ({ members = [], isAdmin = false, loading = false, onRefresh }) => {
+export default function MembersTable({ members, isAdmin ,loading}) {
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  // Memoized filtered and sorted data
-  const processedMembers = useMemo(() => {
-    if (!members?.length) return [];
-
-    // Filter members based on search query
-    const filtered = members.filter((member) => {
-      const query = searchQuery.toLowerCase().trim();
-      if (!query) return true;
-      
-      return (
-        member.name?.toLowerCase().includes(query) ||
-        member.mobile?.toLowerCase().includes(query) ||
-        member._id?.toLowerCase().includes(query) ||
-        member.email?.toLowerCase().includes(query) ||
-        member.companyName?.toLowerCase().includes(query) ||
-        member.designation?.toLowerCase().includes(query)
-      );
-    });
-
-    // Sort members
-    const sorted = [...filtered].sort((a, b) => {
-      const aValue = a[sortField]?.toString().toLowerCase() || '';
-      const bValue = b[sortField]?.toString().toLowerCase() || '';
-
-      if (sortDirection === 'asc') {
-        return aValue.localeCompare(bValue);
-      } else {
-        return bValue.localeCompare(aValue);
-      }
-    });
-
-    return sorted;
-  }, [members, searchQuery, sortField, sortDirection]);
-
-  // Pagination
-  const totalPages = Math.ceil(processedMembers.length / itemsPerPage);
-  const paginatedMembers = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return processedMembers.slice(startIndex, startIndex + itemsPerPage);
-  }, [processedMembers, currentPage]);
 
   // Handle sorting
-  const handleSort = useCallback((field) => {
+  const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
       setSortDirection('asc');
     }
-  }, [sortField]);
+  };
 
-  // Handle search
-  const handleSearch = useCallback((e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page when searching
-  }, []);
+  // Filter members based on search query
+  const filteredMembers = members?.filter((member) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      member.name?.toLowerCase().includes(query) ||
+      member.mobile?.toLowerCase().includes(query) ||
+      member._id?.toLowerCase().includes(query) ||
+      member.email?.toLowerCase().includes(query) ||
+      member.companyName?.toLowerCase().includes(query) ||
+      member.designation?.toLowerCase().includes(query)
+    );
+  });
+
+  // Sort members
+  const sortedMembers = [...filteredMembers].sort((a, b) => {
+    const aValue = a[sortField]?.toString().toLowerCase() || '';
+    const bValue = b[sortField]?.toString().toLowerCase() || '';
+
+    if (sortDirection === 'asc') {
+      return aValue.localeCompare(bValue);
+    } else {
+      return bValue.localeCompare(aValue);
+    }
+  });
 
   // Sort Icon Component
   const SortIcon = ({ field }) => {
-    if (sortField !== field) {
-      return (
-        <div className="w-4 h-4 text-secondary-400 opacity-0 group-hover:opacity-100 transition-opacity">
-          <ChevronUpIcon className="w-4 h-4" />
-        </div>
-      );
-    }
+    if (sortField !== field) return null;
     return sortDirection === 'asc' ? (
-      <ChevronUpIcon className="w-4 h-4 text-primary-600" />
+      <svg className="w-4 h-4 text-gray-600 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
     ) : (
-      <ChevronDownIcon className="w-4 h-4 text-primary-600" />
-    );
-  };
-
-  // Avatar Component
-  const Avatar = ({ member }) => {
-    const [imageError, setImageError] = useState(false);
-    
-    if (member.photo && !imageError) {
-      return (
-        <img
-          src={member.photo}
-          alt={`${member.name}'s photo`}
-          className="w-10 h-10 rounded-full object-cover border-2 border-secondary-200 dark:border-secondary-600"
-          onError={() => setImageError(true)}
-        />
-      );
-    }
-    
-    return (
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-semibold text-sm">
-        {member.name?.charAt(0)?.toUpperCase() || '?'}
-      </div>
-    );
-  };
-
-  // Social Links Component
-  const SocialLinks = ({ member }) => {
-    const social = member.social || {};
-    const links = [
-      { key: 'linkedin', url: social.linkedin, label: 'LinkedIn' },
-      { key: 'twitter', url: social.twitter, label: 'Twitter' },
-      { key: 'facebook', url: social.facebook, label: 'Facebook' },
-    ].filter(link => link.url);
-
-    if (!links.length) return <span className="text-secondary-400">-</span>;
-
-    return (
-      <div className="flex space-x-2">
-        {links.map((link) => (
-          <a
-            key={link.key}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary-600 hover:text-primary-700 transition-colors"
-            title={link.label}
-          >
-            <span className="text-xs font-medium">{link.key.charAt(0).toUpperCase()}</span>
-          </a>
-        ))}
-      </div>
-    );
-  };
-
-  // Pagination Component
-  const Pagination = () => {
-    if (totalPages <= 1) return null;
-
-    return (
-      <div className="flex items-center justify-between px-6 py-4 border-t border-secondary-200 dark:border-secondary-700">
-        <div className="text-sm text-secondary-600 dark:text-secondary-400">
-          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, processedMembers.length)} of {processedMembers.length} members
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          
-          {/* Page numbers */}
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const pageNum = i + Math.max(1, currentPage - 2);
-            if (pageNum > totalPages) return null;
-            
-            return (
-              <Button
-                key={pageNum}
-                variant={currentPage === pageNum ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentPage(pageNum)}
-              >
-                {pageNum}
-              </Button>
-            );
-          })}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      <svg className="w-4 h-4 text-gray-600 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
     );
   };
 
   return (
-    <div className="bg-white dark:bg-secondary-800 rounded-xl shadow-soft border border-secondary-100 dark:border-secondary-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-secondary-200 dark:border-secondary-700 bg-secondary-50 dark:bg-secondary-700/50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <UserIcon className="w-6 h-6 text-primary-600" />
-            <h2 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100">
-              Members Directory
-            </h2>
-            <span className="px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
-              {processedMembers.length}
-            </span>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <Input
-              placeholder="Search members..."
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            Members ({sortedMembers.length})
+          </h2>
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Search"
               value={searchQuery}
-              onChange={handleSearch}
-              leftIcon={<MagnifyingGlassIcon className="w-5 h-5" />}
-              className="w-64"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400 focus:border-transparent transition-all"
             />
-            {onRefresh && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                loading={loading}
-              >
-                Refresh
-              </Button>
-            )}
+            <svg
+              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-secondary-50 dark:bg-secondary-700/30 border-b border-secondary-200 dark:border-secondary-600">
+        <table className="w-full bg-white dark:bg-gray-800">
+          <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
               <th
                 onClick={() => handleSort('name')}
-                className="group px-6 py-4 text-left text-xs font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-600/50 transition-colors"
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
-                <div className="flex items-center space-x-1">
-                  <span>Member</span>
+                <div className="flex items-center">
+                  <span>Full Name</span>
                   <SortIcon field="name" />
                 </div>
               </th>
               <th
-                onClick={() => handleSort('email')}
-                className="group px-6 py-4 text-left text-xs font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-600/50 transition-colors"
+                onClick={() => handleSort('_id')}
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
-                <div className="flex items-center space-x-1">
-                  <span>Contact</span>
+                <div className="flex items-center">
+                  <span>Member ID</span>
+                  <SortIcon field="_id" />
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('phone')}
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              >
+                <div className="flex items-center">
+                  <span>Phone</span>
+                  <SortIcon field="phone" />
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort('email')}
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              >
+                <div className="flex items-center">
+                  <span>Email</span>
                   <SortIcon field="email" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('companyName')}
-                className="group px-6 py-4 text-left text-xs font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-600/50 transition-colors"
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center">
                   <span>Company</span>
                   <SortIcon field="companyName" />
                 </div>
               </th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">
+              <th
+                onClick={() => handleSort('designation')}
+                className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+              >
+                <div className="flex items-center">
+                  <span>Designation</span>
+                  <SortIcon field="designation" />
+                </div>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                 Social
               </th>
               {isAdmin && (
-                <th className="px-6 py-4 text-center text-xs font-semibold text-secondary-700 dark:text-secondary-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          
-          <tbody className="divide-y divide-secondary-200 dark:divide-secondary-700">
-            {loading ? (
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+               {loading ? (
               <tr>
-                <td colSpan={isAdmin ? 5 : 4} className="p-0">
-                  <TableSkeleton rows={5} columns={isAdmin ? 5 : 4} />
-                </td>
-              </tr>
-            ) : processedMembers.length === 0 ? (
-              <tr>
-                <td colSpan={isAdmin ? 5 : 4} className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center space-y-3">
-                    <UserIcon className="w-12 h-12 text-secondary-400" />
-                    <div className="text-secondary-900 dark:text-secondary-100 font-medium">
-                      {searchQuery ? 'No members match your search' : 'No members found'}
-                    </div>
-                    <p className="text-secondary-500 dark:text-secondary-400 text-sm">
-                      {searchQuery ? 'Try adjusting your search terms' : 'Members will appear here once they are added'}
-                    </p>
+                <td colSpan={isAdmin ? 8 : 7} className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <svg className="animate-spin h-8 w-8 text-indigo-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                    <span className="text-gray-500 dark:text-gray-300">Loading members...</span>
                   </div>
                 </td>
               </tr>
+            ) :
+            sortedMembers.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-6 py-8 text-center">
+                  <div className="text-gray-400 mb-2">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
+                    {searchQuery ? 'No members match your search' : 'No members found'}
+                  </h3>
+                </td>
+              </tr>
             ) : (
-              paginatedMembers.map((member) => (
-                <tr 
-                  key={member._id} 
-                  className="hover:bg-secondary-50 dark:hover:bg-secondary-700/30 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center space-x-3">
-                      <Avatar member={member} />
-                      <div>
-                        <div className="font-medium text-secondary-900 dark:text-secondary-100">
-                          {member.name || 'N/A'}
-                        </div>
-                        <div className="text-sm text-secondary-500 dark:text-secondary-400">
-                          ID: {member.memberId || member._id?.slice(-6) || 'N/A'}
-                        </div>
-                      </div>
+              sortedMembers.map((member) => (
+                <tr key={member._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      {/* <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600">
+                        <img
+                          src={member.photo || '/logo.png'}
+                          alt={member.name}
+                          className="h-10 w-10 object-cover"
+                        />
+                      </div> */}
+                      {/* <div className="ml-4"> */}
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{member.name}</div>
+                      {/* </div> */}
                     </div>
                   </td>
-                  
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {member._id.slice(-6)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {member.mobile}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {member.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {member.companyName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                    {member.profession}
+                  </td>
                   <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <EnvelopeIcon className="w-4 h-4 text-secondary-400" />
-                        <span className="text-secondary-900 dark:text-secondary-100">
-                          {member.email || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm">
-                        <PhoneIcon className="w-4 h-4 text-secondary-400" />
-                        <span className="text-secondary-600 dark:text-secondary-400">
-                          {member.mobile || 'N/A'}
-                        </span>
-                      </div>
+                    <div className="flex space-x-2">
+                      {member.social?.linkedin && (
+                        <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                          <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.822 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h11.494v-9.294H9.689v-3.621h3.129V8.412c0-3.099 1.894-4.787 4.659-4.787 1.325 0 2.464.1 2.796.144v3.24l-1.918.001c-1.503 0-1.794.715-1.794 1.762v2.31h3.587l-.468 3.622h-3.119V24h6.116c.73 0 1.324-.593 1.324-1.324V1.324C24 .593 23.408 0 22.676 0h.003z" />
+                          </svg>
+                        </a>
+                      )}
+                      {member.social?.instagram && (
+                        <a href={member.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                          <svg className="w-4 h-4 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.204-.012 3.583-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-4.358-.2-6.78-2.618-6.98-6.98-.059-1.281-.073-1.689-.073-4.948 0-3.204.013-3.583.072-4.948.2-4.358 2.618-6.78 6.98-6.98 1.281-.057 1.689-.072 4.948-.072zm0-2.163c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                          </svg>
+                        </a>
+                      )}
+                      {member.social?.twitter && (
+                        <a href={member.social.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                          <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                          </svg>
+                        </a>
+                      )}
+                      {member.social?.facebook && (
+                        <a href={member.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                          <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.408.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.412c0-3.099 1.894-4.787 4.659-4.787 1.325 0 2.464.1 2.796.144v3.24l-1.918.001c-1.503 0-1.794.715-1.794 1.762v2.31h3.587l-.468 3.622h-3.119V24h6.116c.73 0 1.324-.593 1.324-1.324V1.324C24 .593 23.408 0 22.676 0h.003z" />
+                          </svg>
+                        </a>
+                      )}
                     </div>
                   </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <BuildingOfficeIcon className="w-4 h-4 text-secondary-400" />
-                        <span className="font-medium text-secondary-900 dark:text-secondary-100">
-                          {member.companyName || 'N/A'}
-                        </span>
-                      </div>
-                      <div className="text-sm text-secondary-600 dark:text-secondary-400">
-                        {member.designation || 'N/A'}
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <SocialLinks member={member} />
-                  </td>
-                  
-                  {isAdmin && (
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center space-x-2">
-                        <Link href={`/dashboard/profile/${member._id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<EyeIcon className="w-4 h-4" />}
-                          >
-                            View
-                          </Button>
+               
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <div className="flex justify-center space-x-3">
+                        {/* View Icon */}
+                        <Link href={`/dashboard/profile/${member._id}`} passHref>
+                          <div className="text-blue-500 hover:text-blue-700 cursor-pointer transition-colors">
+                            <EyeIcon className="w-5 h-5" />
+                          </div>
                         </Link>
-                        <Link href={`/dashboard/profile/edit/${member._id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<PencilIcon className="w-4 h-4" />}
-                          >
-                            Edit
-                          </Button>
-                        </Link>
+
+                        {/* Edit Icon */}
+                       {isAdmin && (    <Link href={`/dashboard/profile/edit/${member._id}`} passHref>
+                          <div className="text-yellow-500 hover:text-yellow-600 cursor-pointer transition-colors">
+                            <PencilIcon className="w-5 h-5" />
+                          </div>
+                        </Link>)}
                       </div>
                     </td>
-                  )}
+                  
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      <Pagination />
     </div>
   );
-};
-
-export default MembersTable;
+}

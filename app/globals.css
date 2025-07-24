@@ -16,70 +16,46 @@
 body {
   @apply bg-[var(--background)] text-[var(--foreground)];
 }
+/* @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Custom animations */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+body {
+  @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-white;
+}
+.input {
+  @apply w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+.btn-primary {
+  @apply bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition;
+}
+.btn-secondary {
+  @apply bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300 transition;
+} */
+/* @import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
   }
-  100% {
-    background-position: 200% 0;
-  }
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.4), 
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-.dark .animate-shimmer {
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent
-  );
-  background-size: 200% 100%;
-}
-
-/* Smooth transitions for all interactive elements */
-* {
-  @apply transition-colors duration-200;
-}
-
-/* Focus styles */
-*:focus {
-  @apply outline-none;
-}
-
-/* Scrollbar styles */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-secondary-100 dark:bg-secondary-800;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-secondary-300 dark:bg-secondary-600 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-secondary-400 dark:bg-secondary-500;
-}
-
-/* Loading state improvements */
-.loading-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Better focus rings */
-.focus-ring {
-  @apply focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-secondary-900;
-}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+} */
