@@ -6,14 +6,6 @@ import ProfileDropdown from "./ProfileDropdown"; // Assuming this is your compon
 import { BellIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useSession } from "next-auth/react";
 
-const navigationLinks = [
-  { href: "/dashboard", label: "Dashboard" }, // Visible to all
-  { href: "/dashboard/members", label: "Members" }, // Visible to all (or adjust if needed)
-  { href: "/dashboard/admin/registrations", label: "Registrations", role: "admin" }, // Admin-only
-  { href: "/dashboard/members", label: "Contact Admin", role: "member" }, 
-  // { href: "/dashboard/events", label: "Events" }, // Example: Add role: "admin" if admin-only
-  // Add more links here, with optional 'role: "admin"'
-];
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,6 +13,14 @@ export default function Header() {
   const { data: session, status } = useSession(); 
   const isAdmin = session?.user?.role === 'admin';
 
+const navigationLinks = [
+  {   href: isAdmin ? "/dashboard/admin" : "/dashboard", label: "Dashboard" }, // Visible to all
+  { href: "/dashboard/members", label: "Members" }, // Visible to all (or adjust if needed)
+  { href: "/dashboard/admin/registrations", label: "Registrations", role: "admin" }, // Admin-only
+  { href: "/dashboard/members", label: "Contact Admin", role: "member" }, 
+  // { href: "/dashboard/events", label: "Events" }, // Example: Add role: "admin" if admin-only
+  // Add more links here, with optional 'role: "admin"'
+];
   // Filter links based on role
   const filteredLinks = navigationLinks.filter(link => {
     if (!link.role) return true; // Show if no role specified (visible to all)
