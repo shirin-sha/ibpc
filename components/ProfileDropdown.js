@@ -76,7 +76,7 @@ export default function ProfileDropdown() {
             )}
             
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/dashboard/change-password')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 cursor-pointer transition duration-150"
             >
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

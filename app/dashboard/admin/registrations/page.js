@@ -1,13 +1,24 @@
 'use client';
-import { useEffect, useState } from 'react';
-import RegistrationTable from '@/components/RegistrationRequests';
+import { useEffect, useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+
+// Lazy load the heavy RegistrationTable component
+const RegistrationTable = dynamic(() => import('@/components/RegistrationRequests'), {
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      <span className="ml-3 text-gray-600">Loading registrations...</span>
+    </div>
+  ),
+  ssr: false // Disable SSR for this component since it's heavy
+});
 
 export default function Registrations() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRegistrations = async () => {
-    setLoading(true); // Make sure to set loading true before fetching
+    setLoading(true);
     try {
       const res = await fetch('/api/register');
       const data = await res.json();
@@ -24,10 +35,17 @@ export default function Registrations() {
   }, []);
 
   return (
-    <RegistrationTable
-      data={registrations}
-      refreshData={fetchRegistrations}
-      loading={loading} // Pass loading state
-    />
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <span className="ml-3 text-gray-600">Loading...</span>
+      </div>
+    }>
+      <RegistrationTable
+        data={registrations}
+        refreshData={fetchRegistrations}
+        loading={loading}
+      />
+    </Suspense>
   );
 }

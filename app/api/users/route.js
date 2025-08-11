@@ -40,8 +40,6 @@ async function addSignedUrls(users) {
       }
     } catch (error) {
       console.error('Signed URL Error:', error);
-      // Fallback: Return original key or handle error (e.g., set to null)
-      // user.photo = null; // Optional: Clear if signing fails
     }
   }
 
@@ -55,22 +53,45 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q');
-    let filter = {};
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
+    const size = Math.min(Math.max(parseInt(searchParams.get('size') || '20', 10), 1), 100);
+
+    const baseFilter = { role: { $ne: 'admin' } };
+    let filter = baseFilter;
     if (q) {
       filter = {
+        ...baseFilter,
         $or: [
           { name: { $regex: q, $options: 'i' } },
-          { mobile: { $regex: q, $options: 'i' } }, // Assuming 'mobile' is the field (was 'phone' in previous code)
-          { memberId: { $regex: q, $options: 'i' } } // Assuming 'memberId' is like '_id' or custom
+          { mobile: { $regex: q, $options: 'i' } },
+          { memberId: { $regex: q, $options: 'i' } }
         ]
       };
     }
-    let users = await User.find(filter).select('-password');
-    
-    // Add signed URLs
-    users = await addSignedUrls(users);
-    
-    return NextResponse.json(users);
+
+    const cursor = User.find(filter)
+      .select('name email mobile memberId companyName profession designation social photo industrySector')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * size)
+      .limit(size)
+      .lean();
+
+    const [usersRaw, total] = await Promise.all([
+      cursor,
+      User.countDocuments(filter),
+    ]);
+
+    let users = await addSignedUrls(usersRaw);
+
+    const res = NextResponse.json({
+      data: users,
+      page,
+      size,
+      total,
+      totalPages: Math.ceil(total / size),
+    });
+    res.headers.set('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+    return res;
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
@@ -84,10 +105,8 @@ export async function POST(req) {
     const { id } = await req.json();
     let user = await User.findById(id).select('-password');
     if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    
     // Add signed URLs
     user = await addSignedUrls(user);
-    
     return NextResponse.json(user);
   } catch (error) {
     console.error('POST Error:', error);
@@ -115,10 +134,10 @@ export async function PATCH(req) {
 
     let updated = await User.findByIdAndUpdate(id, updateObj, { new: true }).select('-password');
     if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    
+
     // Add signed URLs to the response
     updated = await addSignedUrls(updated);
-    
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error('PATCH Error:', error);

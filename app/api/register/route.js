@@ -127,6 +127,12 @@ export async function POST(request) {
       photo: photoKey, // Store KEY
       benefitFromIbpc: data.benefit,
       contributeToIbpc: data.contribution,
+      alternateMobile: data.alternateMobile,
+      alternateEmail: data.alternateEmail,
+      industrySector: data.industrySector,
+      alternateIndustrySector: data.alternateIndustrySector,
+      companyAddress: data.companyAddress,
+      companyWebsite: data.companyWebsite,
     });
     
     await registration.save();
@@ -147,12 +153,12 @@ export async function POST(request) {
 export async function GET() {
   try {
     await connectDB();
-    let registrations = await Registration.find({}).sort({ createdAt: -1 });
-    
+    let registrations = await Registration.find({}).sort({ createdAt: -1 }).lean();
     // Add signed URLs
     registrations = await addSignedUrls(registrations);
-    
-    return NextResponse.json(registrations);
+    const res = NextResponse.json(registrations);
+    res.headers.set('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+    return res;
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
@@ -163,23 +169,36 @@ export async function GET() {
 export async function PUT(req) {
   try {
     await connectDB();
-    const { id } = await req.json();
-    console.log('Approving registration ID:', id);
-
+    const body = await req.json();
+    const { id, membershipValidity } = body;
     const reg = await Registration.findById(id);
     if (!reg) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    // If only updating membershipValidity (admin action)
+    if (membershipValidity) {
+      reg.membershipValidity = membershipValidity;
+      await reg.save();
+      return NextResponse.json({ message: 'Membership validity updated.' });
+    }
 
     if (reg.status === 'Approved') {
       return NextResponse.json({ error: 'Already approved' }, { status: 400 });
     }
 
-    const memberId = 'IBPC' + Date.now().toString().slice(-6);
+    // Generate next 5-digit memberId (numbers only, start at 10001)
+    const lastUser = await User.findOne({ memberId: { $regex: /^\d{5}$/ } }).sort({ memberId: -1 });
+    let nextMemberId = 10001;
+    if (lastUser && lastUser.memberId && !isNaN(Number(lastUser.memberId))) {
+      nextMemberId = Math.max(Number(lastUser.memberId) + 1, 10001);
+    }
+    const memberId = String(nextMemberId).padStart(5, '0');
+
     const username = reg.email;
     const rawPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
     const user = new User({
-      name: reg.fullName || reg.name,
+      name: reg.name,
       email: reg.email,
       password: hashedPassword,
       role: 'member',
@@ -193,25 +212,32 @@ export async function PUT(req) {
       civilId: reg.civilId,
       address: reg.address,
       officePhone: reg.officePhone,
-      residencePhone: reg.residencePhone,
+
       mobile: reg.mobile,
       benefitFromIbpc: reg.benefitFromIbpc,
       contributeToIbpc: reg.contributeToIbpc,
       proposer1: reg.proposer1,
       proposer2: reg.proposer2,
-      photo: reg.photo || '', // Store KEY (or empty if none)
+      photo: reg.photo || '',
+      // New fields propagated from registration
+      nationality: reg.nationality,
+      membershipType: reg.membershipType,
+      alternateMobile: reg.alternateMobile,
+      alternateEmail: reg.alternateEmail,
+      industrySector: reg.industrySector,
+      alternateIndustrySector: reg.alternateIndustrySector,
+      companyAddress: reg.companyAddress,
+      companyWebsite: reg.companyWebsite,
     });
     await user.save();
-    console.log('User created successfully');
-
     reg.status = 'Approved';
+    reg.memberId = memberId;
     await reg.save();
-    console.log('Registration status updated');
 
     await sendMail({
       to: reg.email,
       subject: 'Your IBPC Membership Credentials',
-      text: `Dear ${reg.fullName || reg.name},\n\nYour IBPC membership has been approved.\n\nMember ID: ${memberId}\nUsername: ${username}\nPassword: ${rawPassword}\n\nLogin URL: https://ibpc-nextjs.vercel.app \n\nPlease log in and change your password after first login.\n\nRegards,\nIBPC Kuwait`
+      text: `Dear ${reg.name},\n\nYour IBPC membership has been approved.\n\nMember ID: ${memberId}\nUsername: ${username}\nPassword: ${rawPassword}\n\nLogin URL: https://ibpc-nextjs.vercel.app \n\nPlease log in and change your password after first login.\n\nRegards,\nIBPC Kuwait`
     });
 
     return NextResponse.json({ message: 'Member created and credentials sent.' });

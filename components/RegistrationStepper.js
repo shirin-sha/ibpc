@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useState } from "react";
+import { INDUSTRY_SECTORS } from "@/lib/industrySectors";
 
 const steps = [
   { number: "1", title: "Personal & Business Info", icon: "👤" },
@@ -18,7 +19,7 @@ export default function RegistrationStepper({ onComplete }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [form, setForm] = useState({
-    fullName: "",
+    name: "",
     companyName: "",
     profession: "",
     businessActivity: "",
@@ -27,7 +28,6 @@ export default function RegistrationStepper({ onComplete }) {
     civilId: "",
     address: "",
     officePhone: "",
-    residencePhone: "",
     mobile: "",
     email: "",
     benefit: "",
@@ -36,6 +36,15 @@ export default function RegistrationStepper({ onComplete }) {
     proposer2: "",
     photo: null,
     consent: false,
+    // New fields
+    industrySector: "",
+    alternateIndustrySector: "",
+    companyAddress: "",
+    companyWebsite: "",
+    alternateMobile: "",
+    alternateEmail: "",
+    nationality: "",
+    membershipType: "",
   });
 
   // Validation for each step
@@ -43,11 +52,16 @@ export default function RegistrationStepper({ onComplete }) {
     switch (step) {
       case 0:
         return (
-          form.fullName.trim() &&
+          form.name.trim() &&
           form.profession.trim() &&
           form.companyName.trim() &&
           form.businessActivity.trim() &&
-          form.sponsorName.trim()
+          form.sponsorName.trim() &&
+          form.industrySector &&
+          form.companyAddress.trim() &&
+          form.companyWebsite.trim() &&
+          form.nationality &&
+          form.membershipType
         );
       case 1:
         return (
@@ -124,15 +138,18 @@ export default function RegistrationStepper({ onComplete }) {
       const result = await response.json();
 
       if (response.ok) {
-  if (typeof onComplete === 'function') {
-        onComplete(); // ✅ HERE is where we call it
-      }
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
         setForm({
-          fullName: "", companyName: "", profession: "", businessActivity: "",
+          name: "", companyName: "", profession: "", businessActivity: "",
           sponsorName: "", passportNumber: "", civilId: "", address: "",
-          officePhone: "", residencePhone: "", mobile: "", email: "",
+          officePhone: "", mobile: "", email: "",
           benefit: "", contribution: "", proposer1: "", proposer2: "",
           photo: null, consent: false,
+          industrySector: "", alternateIndustrySector: "", companyAddress: "", companyWebsite: "",
+          alternateMobile: "", alternateEmail: "",
+          nationality: "", membershipType: "",
         });
         setPhotoPreview(null);
         setStep(0);
@@ -145,7 +162,7 @@ export default function RegistrationStepper({ onComplete }) {
     }
   };
 
-  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-red-500 focus:border-red-500 placeholder-gray-400";
+  const inputClass = "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900";
 
   return (
     <div className="max-w-5xl mx-auto px-6 md:px-10">
@@ -210,52 +227,192 @@ export default function RegistrationStepper({ onComplete }) {
           {step === 0 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal & Business Information</h2>
-              <div className="grid gap-3">
-                <input
-                  type="text"
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleChange}
-                  placeholder="Full Name"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="profession"
-                  value={form.profession}
-                  onChange={handleChange}
-                  placeholder="Profession & Designation"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="companyName"
-                  value={form.companyName}
-                  onChange={handleChange}
-                  placeholder="Company Name"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="businessActivity"
-                  value={form.businessActivity}
-                  onChange={handleChange}
-                  placeholder="Business Activity Type"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="sponsorName"
-                  value={form.sponsorName}
-                  onChange={handleChange}
-                  placeholder="Kuwaiti Sponsor/Partner Name"
-                  className={inputClass}
-                  required
-                />
+              <div className="grid gap-3 md:grid-cols-2">
+                {/* Floating label input example: */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    id="name"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Full Name"
+                    required
+                  />
+                  <label htmlFor="name" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Full Name
+                  </label>
+                </div>
+                {/* Repeat for all other fields in this section, using two columns */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="profession"
+                    value={form.profession}
+                    onChange={handleChange}
+                    id="profession"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Profession & Designation"
+                    required
+                  />
+                  <label htmlFor="profession" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Profession & Designation
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    id="companyName"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Company Name"
+                    required
+                  />
+                  <label htmlFor="companyName" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Company Name
+                  </label>
+                </div>
+                {/* New: Company Address */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="companyAddress"
+                    value={form.companyAddress}
+                    onChange={handleChange}
+                    id="companyAddress"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Company Address"
+                    required
+                  />
+                  <label htmlFor="companyAddress" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Company Address
+                  </label>
+                </div>
+                {/* New: Company Website */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="companyWebsite"
+                    value={form.companyWebsite}
+                    onChange={handleChange}
+                    id="companyWebsite"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Company Website"
+                    required
+                  />
+                  <label htmlFor="companyWebsite" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Company Website
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="businessActivity"
+                    value={form.businessActivity}
+                    onChange={handleChange}
+                    id="businessActivity"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Business Activity Type"
+                    required
+                  />
+                  <label htmlFor="businessActivity" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Business Activity Type
+                  </label>
+                </div>
+                {/* New: Industry Sector Dropdown */}
+                <div className="relative">
+                  <select
+                    name="industrySector"
+                    value={form.industrySector}
+                    onChange={handleChange}
+                    id="industrySector"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    required
+                  >
+                    <option value="">Select Industry Sector</option>
+                    {INDUSTRY_SECTORS.map((sector) => (
+                      <option key={sector} value={sector}>{sector}</option>
+                    ))}
+                  </select>
+                  <label htmlFor="industrySector" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Industry Sector
+                  </label>
+                </div>
+                {/* New: Alternate Industry Sector Dropdown */}
+                <div className="relative">
+                  <select
+                    name="alternateIndustrySector"
+                    value={form.alternateIndustrySector}
+                    onChange={handleChange}
+                    id="alternateIndustrySector"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                  >
+                    <option value="">Select Alternate Industry Sector (optional)</option>
+                    {INDUSTRY_SECTORS.map((sector) => (
+                      <option key={sector} value={sector}>{sector}</option>
+                    ))}
+                  </select>
+                  <label htmlFor="alternateIndustrySector" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Alternate Industry Sector (optional)
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="sponsorName"
+                    value={form.sponsorName}
+                    onChange={handleChange}
+                    id="sponsorName"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Kuwaiti Sponsor/Partner Name"
+                    required
+                  />
+                  <label htmlFor="sponsorName" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Kuwaiti Sponsor/Partner Name
+                  </label>
+                </div>
+                {/* New: Nationality Dropdown */}
+                <div className="relative">
+                  <select
+                    name="nationality"
+                    value={form.nationality}
+                    onChange={handleChange}
+                    id="nationality"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    required
+                  >
+                    <option value="">Select Nationality</option>
+                    <option value="INDIAN">INDIAN</option>
+                    <option value="OCI CARD HOLDER">OCI CARD HOLDER</option>
+                    <option value="OTHERS">OTHERS</option>
+                  </select>
+                  <label htmlFor="nationality" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Nationality
+                  </label>
+                </div>
+                {/* New: Membership Type Dropdown */}
+                <div className="relative">
+                  <select
+                    name="membershipType"
+                    value={form.membershipType}
+                    onChange={handleChange}
+                    id="membershipType"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    required
+                  >
+                    <option value="">Select Membership Type</option>
+                    <option value="Individual Member">Individual Member</option>
+                    <option value="Corporate Member">Corporate Member</option>
+                    <option value="Special Honorary Member">Special Honorary Member</option>
+                    <option value="Honorary Member">Honorary Member</option>
+                  </select>
+                  <label htmlFor="membershipType" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Membership Type
+                  </label>
+                </div>
                 {/* Photo Picker */}
                 <div className="flex flex-col gap-2">
                   <label className="cursor-pointer inline-flex items-center gap-2">
@@ -297,25 +454,37 @@ export default function RegistrationStepper({ onComplete }) {
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Identification Details</h2>
-              <div className="grid gap-3">
-                <input
-                  type="text"
-                  name="passportNumber"
-                  value={form.passportNumber}
-                  onChange={handleChange}
-                  placeholder="Indian Passport Number"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="civilId"
-                  value={form.civilId}
-                  onChange={handleChange}
-                  placeholder="Kuwait Civil ID Number"
-                  className={inputClass}
-                  required
-                />
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="passportNumber"
+                    value={form.passportNumber}
+                    onChange={handleChange}
+                    id="passportNumber"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Indian Passport Number"
+                    required
+                  />
+                  <label htmlFor="passportNumber" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Indian Passport Number
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="civilId"
+                    value={form.civilId}
+                    onChange={handleChange}
+                    id="civilId"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Kuwait Civil ID Number"
+                    required
+                  />
+                  <label htmlFor="civilId" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Kuwait Civil ID Number
+                  </label>
+                </div>
               </div>
             </div>
           )}
@@ -323,49 +492,105 @@ export default function RegistrationStepper({ onComplete }) {
           {step === 2 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
-              <div className="grid gap-3">
+              {/* Address in Kuwait (full width) */}
+              <div className="relative mb-2">
                 <textarea
                   name="address"
                   value={form.address}
                   onChange={handleChange}
+                  id="address"
+                  className={`${inputClass} peer pt-6 placeholder-transparent`}
                   placeholder="Address in Kuwait"
-                  className={inputClass}
                   rows="2"
                   required
                 />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label htmlFor="address" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                  Address in Kuwait
+                </label>
+              </div>
+              {/* Mobile, Office Mobile (side by side) */}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="relative">
                   <input
                     type="tel"
                     name="mobile"
                     value={form.mobile}
                     onChange={handleChange}
+                    id="mobile"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Mobile"
-                    className={inputClass}
                     required
                   />
+                  <label htmlFor="mobile" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Mobile
+                  </label>
+                </div>
+                <div className="relative">
                   <input
                     type="tel"
                     name="officePhone"
                     value={form.officePhone}
                     onChange={handleChange}
+                    id="officePhone"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Office Phone"
-                    className={inputClass}
                   />
+                  <label htmlFor="officePhone" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Office Phone
+                  </label>
                 </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Email Address"
-                  className={inputClass}
-                  required
-                />
-                {/* Email validation error */}
-                {form.email && !emailRegex.test(form.email) && (
-                  <span className="text-xs text-red-600">Please enter a valid email address.</span>
-                )}
               </div>
+              {/* Alternate Mobile (full width) */}
+              <div className="relative mb-2">
+                <input
+                  type="tel"
+                  name="alternateMobile"
+                  value={form.alternateMobile}
+                  onChange={handleChange}
+                  id="alternateMobile"
+                  className={`${inputClass} peer pt-6 placeholder-transparent`}
+                  placeholder="Alternate Mobile (optional)"
+                />
+                <label htmlFor="alternateMobile" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                  Alternate Mobile (optional)
+                </label>
+              </div>
+              {/* Email, Alternate Email (side by side) */}
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    id="email"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Email Address"
+                    required
+                  />
+                  <label htmlFor="email" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Email Address
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="alternateEmail"
+                    value={form.alternateEmail}
+                    onChange={handleChange}
+                    id="alternateEmail"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Alternate Email (optional)"
+                  />
+                  <label htmlFor="alternateEmail" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Alternate Email (optional)
+                  </label>
+                </div>
+              </div>
+              {/* Email validation error */}
+              {form.email && !emailRegex.test(form.email) && (
+                <span className="text-xs text-red-600">Please enter a valid email address.</span>
+              )}
             </div>
           )}
 
@@ -404,25 +629,37 @@ export default function RegistrationStepper({ onComplete }) {
           {step === 4 && (
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Sponsorship</h2>
-              <div className="grid gap-3">
-                <input
-                  type="text"
-                  name="proposer1"
-                  value={form.proposer1}
-                  onChange={handleChange}
-                  placeholder="First IBPC Member Proposer"
-                  className={inputClass}
-                  required
-                />
-                <input
-                  type="text"
-                  name="proposer2"
-                  value={form.proposer2}
-                  onChange={handleChange}
-                  placeholder="Second IBPC Member Proposer"
-                  className={inputClass}
-                  required
-                />
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="proposer1"
+                    value={form.proposer1}
+                    onChange={handleChange}
+                    id="proposer1"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="First IBPC Member Proposer"
+                    required
+                  />
+                  <label htmlFor="proposer1" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    First IBPC Member Proposer
+                  </label>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="proposer2"
+                    value={form.proposer2}
+                    onChange={handleChange}
+                    id="proposer2"
+                    className={`${inputClass} peer pt-6 placeholder-transparent`}
+                    placeholder="Second IBPC Member Proposer"
+                    required
+                  />
+                  <label htmlFor="proposer2" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
+                    Second IBPC Member Proposer
+                  </label>
+                </div>
               </div>
             </div>
           )}

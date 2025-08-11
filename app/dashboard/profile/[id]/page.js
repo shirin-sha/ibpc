@@ -5,12 +5,16 @@ import { motion } from 'framer-motion';
 import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { useSession } from "next-auth/react";
 
 export default function ViewProfile() {
   const { id } = useParams();
   const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'admin';
+  const [validityEdit, setValidityEdit] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -59,6 +63,7 @@ export default function ViewProfile() {
               <img
                 src={profile.photo || '/logo.png'}
                 alt={profile.name}
+                loading="lazy"
                 className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
               />
             </div>
@@ -89,6 +94,14 @@ export default function ViewProfile() {
                 <div className="flex justify-between">
                   <dt className="text-gray-600 dark:text-gray-300">Profession</dt>
                   <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Nationality</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.nationality || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Membership Type</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipType || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-600 dark:text-gray-300">Passport Number</dt>
@@ -125,6 +138,59 @@ export default function ViewProfile() {
                 <div>
                   <dt className="text-gray-600 dark:text-gray-300 mb-1">Company Brief</dt>
                   <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Company Address</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyAddress || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Company Website</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyWebsite || 'N/A'}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Industry Sector</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">{profile.industrySector || 'N/A'}</dd>
+                </div>
+                {profile.alternateIndustrySector && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-600 dark:text-gray-300">Alternate Industry Sector</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateIndustrySector}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <dt className="text-gray-600 dark:text-gray-300">Membership Validity</dt>
+                  <dd className="font-medium text-gray-900 dark:text-white">
+                    {isAdmin ? (
+                      <>
+                        <select
+                          value={validityEdit || profile.membershipValidity || ""}
+                          onChange={e => setValidityEdit(e.target.value)}
+                          className="border rounded px-2 py-1 text-sm"
+                        >
+                          <option value="">Select Year</option>
+                          {Array.from({ length: 11 }, (_, i) => {
+                            const year = new Date().getFullYear() + i;
+                            return <option key={year} value={year}>{year}</option>;
+                          })}
+                        </select>
+                        <button
+                          className="ml-2 px-3 py-1 bg-blue-600 text-white rounded text-xs"
+                          onClick={async () => {
+                            if (!validityEdit) return;
+                            await fetch(`/api/users/${profile._id}`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ membershipValidity: validityEdit })
+                            });
+                            setValidityEdit("");
+                            window.location.reload();
+                          }}
+                        >Save</button>
+                      </>
+                    ) : (
+                      <span>{profile.membershipValidity || "Not set"}</span>
+                    )}
+                  </dd>
                 </div>
               </dl>
             </motion.div>
@@ -179,6 +245,14 @@ export default function ViewProfile() {
                 <div className="flex items-center space-x-3">
                   <GlobeAltIcon className="w-5 h-5 text-purple-500" />
                   <span>Address: {profile.address || 'N/A'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <PhoneIcon className="w-5 h-5 text-green-500" />
+                  <span>Alternate Mobile: {profile.alternateMobile || 'N/A'}</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <EnvelopeIcon className="w-5 h-5 text-blue-500" />
+                  <span>Alternate Email: {profile.alternateEmail || 'N/A'}</span>
                 </div>
               </div>
             </motion.div>

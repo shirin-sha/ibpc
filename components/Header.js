@@ -1,11 +1,10 @@
 'use client';
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ProfileDropdown from "./ProfileDropdown"; // Assuming this is your component
+import ProfileDropdown from "./ProfileDropdown";
 import { BellIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useSession } from "next-auth/react";
-
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,19 +12,21 @@ export default function Header() {
   const { data: session, status } = useSession(); 
   const isAdmin = session?.user?.role === 'admin';
 
-const navigationLinks = [
-  {   href: isAdmin ? "/dashboard/admin" : "/dashboard", label: "Dashboard" }, // Visible to all
-  { href: "/dashboard/members", label: "Members" }, // Visible to all (or adjust if needed)
-  { href: "/dashboard/admin/registrations", label: "Registrations", role: "admin" }, // Admin-only
-  { href: "/dashboard/members", label: "Contact Admin", role: "member" }, 
-  // { href: "/dashboard/events", label: "Events" }, // Example: Add role: "admin" if admin-only
-  // Add more links here, with optional 'role: "admin"'
-];
-  // Filter links based on role
-  const filteredLinks = navigationLinks.filter(link => {
-    if (!link.role) return true; // Show if no role specified (visible to all)
-    return link.role === 'admin' && isAdmin; // Show admin links only to admins
-  });
+  // Memoize navigation links to prevent unnecessary re-renders
+  const navigationLinks = useMemo(() => [
+    { href: isAdmin ? "/dashboard/admin" : "/dashboard", label: "Dashboard" },
+    { href: "/dashboard/members", label: "Members" },
+    { href: "/dashboard/admin/registrations", label: "Registrations", role: "admin" },
+    { href: "/dashboard/members", label: "Contact Admin", role: "member" },
+  ], [isAdmin]);
+
+  // Memoize filtered links
+  const filteredLinks = useMemo(() => 
+    navigationLinks.filter(link => {
+      if (!link.role) return true;
+      return link.role === 'admin' && isAdmin;
+    }), [navigationLinks, isAdmin]
+  );
 
   return (
     <nav className="bg-gradient-to-br from-red-700 to-slate-900 text-white sticky top-0 z-50 shadow-md">
@@ -34,12 +35,17 @@ const navigationLinks = [
           {/* Logo Section */}
           <div className="flex-shrink-0">
             <Link href="/dashboard" className="flex items-center space-x-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-50 ">
-                {/* Replace with actual image path if needed */}
-                <img src="/logo.png" alt="IBPC Logo" className="w-12 h-12" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-50">
+                <img 
+                  src="/logo.png" 
+                  alt="IBPC Logo" 
+                  className="w-12 h-12"
+                  loading="eager"
+                  priority="high"
+                />
               </div>
               <span className="text-xl font-semibold text-white hidden sm:block">
-                {isAdmin ? 'IBPC Connect' : 'IBPC Connect'} 
+                IBPC Connect
               </span>
             </Link>
           </div>
@@ -50,7 +56,8 @@ const navigationLinks = [
               <Link
                 key={link.href}
                 href={link.href}
-                scroll={false} // Prevent scrolling to top on navigation
+                prefetch={true}
+                scroll={false}
                 className={`px-3 py-2 text-sm font-medium transition-colors
                   ${pathname === link.href 
                     ? 'text-white font-semibold' 
@@ -97,7 +104,7 @@ const navigationLinks = [
                 <Link
                   key={link.href}
                   href={link.href}
-                  scroll={false} // Prevent scrolling to top on navigation
+                  scroll={false}
                   className={`block px-3 py-2 text-base font-medium transition-colors
                     ${pathname === link.href 
                       ? 'text-white font-semibold' 

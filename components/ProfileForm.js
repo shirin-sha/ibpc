@@ -1,6 +1,7 @@
 'use client'; // Required for Next.js 13+ App Router
 
 import { useState } from 'react';
+import { INDUSTRY_SECTORS } from '@/lib/industrySectors';
 import FormField from '../components/FormField';
 import TextAreaField from '../components/TextAreaField';
 import ImageUpload from '../components/ImageUpload'; // Assuming this is your component
@@ -18,16 +19,25 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
     sponsorName: user.sponsorName || '',
     address: user.address || '',
     officePhone: user.officePhone || '',
-    residencePhone: user.residencePhone || '',
     benefit: user.benefit || '',
     contribution: user.contribution || '',
     proposer1: user.proposer1 || '',
     proposer2: user.proposer2 || '',
+    // Additional new fields
+    nationality: user.nationality || '',
+    membershipType: user.membershipType || '',
+    alternateMobile: user.alternateMobile || '',
+    alternateEmail: user.alternateEmail || '',
+    industrySector: user.industrySector || '',
+    alternateIndustrySector: user.alternateIndustrySector || '',
+    companyAddress: user.companyAddress || '',
+    companyWebsite: user.companyWebsite || '',
   };
 
   // Form state
   const [formData, setFormData] = useState(initialFormData);
   const [files, setFiles] = useState({ photo: null, logo: null });
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,6 +59,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     const data = new FormData();
 
     // Append form fields
@@ -83,6 +94,8 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
       }
     } catch (error) {
       alert('An unexpected error occurred.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -103,12 +116,21 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-3"><FormField label="Email" name="email" value={formData.email} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Office Phone" name="officePhone" value={formData.officePhone} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Residence Phone" name="residencePhone" value={formData.residencePhone} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-6"><TextAreaField label="Address in Kuwait" name="address" value={formData.address} onChange={handleChange} rows={2} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Member ID" name="memberId" value={formData.memberId} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Passport Number" name="passportNumber" value={formData.passportNumber} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Kuwait Civil ID Number" name="civilId" value={formData.civilId} onChange={handleChange} disabled={isMember} /></div>
             
+            {/* New: Alternate Mobile Field */}
+            <div className="sm:col-span-3">
+              <FormField label="Alternate Mobile (Optional)" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} disabled={isMember} />
+            </div>
+            
+            {/* New: Alternate Email Field */}
+            <div className="sm:col-span-3">
+              <FormField label="Alternate Email (Optional)" name="alternateEmail" value={formData.alternateEmail} onChange={handleChange} disabled={isMember} />
+            </div>
+
             {/* Photo Upload */}
             <div className="sm:col-span-3">
               <ImageUpload
@@ -127,6 +149,85 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-3"><FormField label="Profession & Designation" name="profession" value={`${formData.profession}`} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Type of Business Activity" name="businessActivity" value={formData.businessActivity} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Kuwaiti Sponsor/Partner Name" name="sponsorName" value={formData.sponsorName} onChange={handleChange} disabled={isMember} /></div>
+            
+            {/* New: Nationality Field */}
+            <div className="sm:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+              <select
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleChange}
+                disabled={isMember}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">Select Nationality</option>
+                <option value="INDIAN">INDIAN</option>
+                <option value="OCI CARD HOLDER">OCI CARD HOLDER</option>
+                <option value="OTHERS">OTHERS</option>
+              </select>
+            </div>
+            
+            {/* New: Membership Type Field */}
+            <div className="sm:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Membership Type</label>
+              <select
+                name="membershipType"
+                value={formData.membershipType}
+                onChange={handleChange}
+                disabled={isMember}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">Select Membership Type</option>
+                <option value="Individual Member">Individual Member</option>
+                <option value="Corporate Member">Corporate Member</option>
+                <option value="Special Honorary Member">Special Honorary Member</option>
+                <option value="Honorary Member">Honorary Member</option>
+              </select>
+            </div>
+            
+            {/* New: Industry Sector Field */}
+            <div className="sm:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Industry Sector</label>
+              <select
+                name="industrySector"
+                value={formData.industrySector}
+                onChange={handleChange}
+                disabled={isMember}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">Select Industry Sector</option>
+                {INDUSTRY_SECTORS.map(sector => (
+                  <option key={sector} value={sector}>{sector}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* New: Alternate Industry Sector Field */}
+            <div className="sm:col-span-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alternate Industry Sector (Optional)</label>
+              <select
+                name="alternateIndustrySector"
+                value={formData.alternateIndustrySector}
+                onChange={handleChange}
+                disabled={isMember}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">Select Alternate Industry Sector</option>
+                {INDUSTRY_SECTORS.map(sector => (
+                  <option key={sector} value={sector}>{sector}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* New: Company Address Field */}
+            <div className="sm:col-span-6">
+              <TextAreaField label="Company Address" name="companyAddress" value={formData.companyAddress} onChange={handleChange} rows={2} disabled={isMember} />
+            </div>
+            
+            {/* New: Company Website Field */}
+            <div className="sm:col-span-3">
+              <FormField label="Company Website" name="companyWebsite" value={formData.companyWebsite} onChange={handleChange} disabled={isMember} />
+            </div>
             
             {/* Logo Upload */}
             <div className="sm:col-span-3">
@@ -166,6 +267,25 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-3"><FormField label="Instagram" name="instagram" value={formData.instagram} onChange={handleChange} placeholder="https://instagram.com/..." /></div>
             <div className="sm:col-span-3"><FormField label="Twitter / X" name="twitter" value={formData.twitter} onChange={handleChange} placeholder="https://twitter.com/..." /></div>
             <div className="sm:col-span-3"><FormField label="Facebook" name="facebook" value={formData.facebook} onChange={handleChange} placeholder="https://facebook.com/..." /></div>
+
+            {/* Membership Validity (Admin only) */}
+            {isAdmin && (
+              <div className="sm:col-span-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Membership Validity</label>
+                <select
+                  name="membershipValidity"
+                  value={formData.membershipValidity || ""}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900"
+                >
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 11 }, (_, i) => {
+                    const year = new Date().getFullYear() + i;
+                    return <option key={year} value={year}>{year}</option>;
+                  })}
+                </select>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -174,9 +294,10 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
         <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             type="submit"
-            className="order-first sm:order-last w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm"
+            disabled={isSaving}
+            className="order-first sm:order-last w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
           >
-            Save Profile
+            {isSaving ? 'Saving...' : 'Save Profile'}
           </button>
           <button
             type="button"
