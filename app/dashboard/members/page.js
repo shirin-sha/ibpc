@@ -17,42 +17,83 @@ export default function Directory() {
   const [members, setMembers] = useState([]);
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
+  const [size, setSize] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/users?page=${page}&size=20${query ? `&q=${encodeURIComponent(query)}` : ''}`)
-      .then(res => res.json())
-      .then(payload => {
-        setMembers(payload.data || []);
-        setTotalPages(payload.totalPages || 1);
-      })
-      .finally(() => setLoading(false));
-  }, [query, page]);
+    let isCancelled = false;
+    async function fetchPage(currentPage, currentSize) {
+      const res = await fetch(`/api/users?page=${currentPage}&size=${currentSize}${query ? `&q=${encodeURIComponent(query)}` : ''}`);
+      if (!res.ok) throw new Error('Failed to fetch users');
+      return res.json();
+    }
+
+    async function load() {
+      try {
+        setLoading(true);
+        if (size === 'all') {
+          // Fetch first page with max size 100 to learn totals
+          const first = await fetchPage(1, 100);
+          if (isCancelled) return;
+          let combined = first.data || [];
+          const totalCount = first.total || 0;
+          setTotal(totalCount);
+          if (first.totalPages > 1) {
+            const pagePromises = [];
+            for (let p = 2; p <= first.totalPages; p++) {
+              pagePromises.push(fetchPage(p, 100));
+            }
+            const pages = await Promise.all(pagePromises);
+            if (isCancelled) return;
+            for (const payload of pages) {
+              combined = combined.concat(payload.data || []);
+            }
+          }
+          setMembers(combined);
+          setPage(1);
+          setTotalPages(1);
+        } else {
+          const payload = await fetchPage(page, size);
+          if (isCancelled) return;
+          setMembers(payload.data || []);
+          setTotalPages(payload.totalPages || 1);
+          setTotal(payload.total || 0);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          console.error(err);
+          setMembers([]);
+          setTotalPages(1);
+          setTotal(0);
+        }
+      } finally {
+        if (!isCancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      isCancelled = true;
+    };
+  }, [query, page, size]);
 
   return (
     <div>
-   
+      
       <MembersTable
         members={members}
         isAdmin={session?.user?.role === 'admin'}
         loading={loading}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        size={size}
+        onSizeChange={(newSize) => { setPage(1); setSize(newSize); }}
+        totalCount={total}
       />
-      <div className="flex items-center justify-center gap-2 my-4">
-        <button
-          className="px-3 py-1 border rounded disabled:opacity-50"
-          onClick={() => setPage(p => Math.max(1, p - 1))}
-          disabled={page <= 1 || loading}
-        >Prev</button>
-        <span className="text-sm">Page {page} of {totalPages}</span>
-        <button
-          className="px-3 py-1 border rounded disabled:opacity-50"
-          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-          disabled={page >= totalPages || loading}
-        >Next</button>
-      </div>
     </div>
   );
 }

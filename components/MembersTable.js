@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 
-function MembersTable({ members, isAdmin ,loading}) {
+function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onPageChange = () => {}, size = 20, onSizeChange = () => {}, totalCount = 0 }) {
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,37 +58,87 @@ function MembersTable({ members, isAdmin ,loading}) {
     );
   };
 
+  // Pagination helpers
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
+
+  const PageButton = ({ disabled, onClick, children }) => (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+        disabled
+          ? 'text-gray-400 border-gray-200 bg-gray-50 cursor-not-allowed'
+          : 'text-gray-700 border-gray-300 hover:bg-gray-100'
+      }`}
+    >
+      {children}
+    </button>
+  );
+
+  const sizeOptions = [10, 20, 50, 100, 'all'];
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden w-full">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Members ({sortedMembers.length})
+            Members ({sortedMembers.length}{size === 'all' && totalCount ? ` of ${totalCount}` : ''})
           </h2>
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400 focus:border-transparent transition-all"
-            />
-            <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div className="flex items-center gap-3">
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Search in page"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400 focus:border-transparent transition-all"
+              />
+              <svg
+                className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            {isAdmin && (
+              <>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-600 dark:text-gray-300">Rows</label>
+                  <select
+                    className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    value={size}
+                    onChange={(e) => onSizeChange(e.target.value === 'all' ? 'all' : parseInt(e.target.value, 10))}
+                  >
+                    {sizeOptions.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+                {size !== 'all' && (
+                  <div className="flex items-center gap-2">
+                    <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(1)}>{'<<'}</PageButton>
+                    <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>{'Prev'}</PageButton>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Page {page} of {totalPages}
+                    </span>
+                    <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>{'Next'}</PageButton>
+                    <PageButton disabled={!canNext || loading} onClick={() => onPageChange(totalPages)}>{'>>'}</PageButton>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full bg-white dark:bg-gray-800">
+      <div className="overflow-x-auto max-sm:max-h-[60vh] max-sm:overflow-y-auto slim-scroll">
+        <table className="min-w-full bg-white dark:bg-gray-800">
           <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
               {isAdmin ? (
@@ -323,6 +373,22 @@ function MembersTable({ members, isAdmin ,loading}) {
           </tbody>
         </table>
       </div>
+
+      {/* Footer pagination (duplicate for convenience on small screens) */}
+      {size !== 'all' && (
+        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
+          <span className="text-xs text-gray-500">Showing {members.length} {members.length === 1 ? 'result' : 'results'}</span>
+          <div className="flex items-center gap-2">
+            <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(1)}>{'<<'}</PageButton>
+            <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>{'Prev'}</PageButton>
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              Page {page} of {totalPages}
+            </span>
+            <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>{'Next'}</PageButton>
+            <PageButton disabled={!canNext || loading} onClick={() => onPageChange(totalPages)}>{'>>'}</PageButton>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

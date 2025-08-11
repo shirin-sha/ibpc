@@ -5,6 +5,7 @@ import { INDUSTRY_SECTORS } from '@/lib/industrySectors';
 import FormField from '../components/FormField';
 import TextAreaField from '../components/TextAreaField';
 import ImageUpload from '../components/ImageUpload'; // Assuming this is your component
+import { useRouter } from 'next/navigation';
 
 export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
   // Initialize initial form data (for reset) by including all fields from registration
@@ -38,6 +39,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
   const [formData, setFormData] = useState(initialFormData);
   const [files, setFiles] = useState({ photo: null, logo: null });
   const [isSaving, setIsSaving] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +57,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
   const handleCancel = () => {
     setFormData(initialFormData); // Reset to initial user data
     setFiles({ photo: null, logo: null }); // Clear any uploaded files
+    router.back(); // Navigate back
   };
 
   const handleSubmit = async (e) => {

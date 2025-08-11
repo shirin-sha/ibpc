@@ -30,7 +30,7 @@ export default function Header() {
 
   return (
     <nav className="bg-gradient-to-br from-red-700 to-slate-900 text-white sticky top-0 z-50 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
