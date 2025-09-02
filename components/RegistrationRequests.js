@@ -538,36 +538,9 @@ export default function RegistrationTable({ data, refreshData, loading }) {
         <div className="mt-6">
           <div className="flex items-center gap-4">
             <span className="font-semibold text-gray-700 dark:text-gray-200">Membership Validity:</span>
-            {isAdmin ? (
-              <>
-                <select
-                  value={validityEdit || selectedRegistration.membershipValidity || ""}
-                  onChange={e => setValidityEdit(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Select Year</option>
-                  {Array.from({ length: 11 }, (_, i) => {
-                    const year = new Date().getFullYear() + i;
-                    return <option key={year} value={year}>{year}</option>;
-                  })}
-                </select>
-                <button
-                  className="ml-2 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                  onClick={async () => {
-                    if (!validityEdit) return;
-                    await fetch(`/api/register`, {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ id: selectedRegistration._id, membershipValidity: validityEdit })
-                    });
-                    refreshData();
-                    setValidityEdit("");
-                  }}
-                >Save</button>
-              </>
-            ) : (
+          
               <span className="text-gray-900 dark:text-white">{selectedRegistration.membershipValidity || "Not set"}</span>
-            )}
+          
           </div>
         </div>
       </div>

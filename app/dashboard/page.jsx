@@ -2,6 +2,7 @@
 import Card from '@/components/Card';
 import { useSession } from 'next-auth/react';
 import React from 'react';
+import Link from 'next/link';
 
 const Dashboard = () => {
     const { data: session, status } = useSession(); 
@@ -23,17 +24,50 @@ const Dashboard = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 You're all set to manage your profile and access member data.
               </p>
-              <a 
-                href={`dashboard/profile/edit/${session?.user?.id}`}
-                className="text-blue-500 hover:text-blue-700 hover:underline font-medium text-xs"
-                aria-label="Edit Profile"
-              >
-                Edit Profile
-              </a>
+              <div className="flex items-center gap-3">
+                <Link 
+                  href={`/dashboard/profile/${session?.user?.id || ''}`}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                  aria-label="View Profile"
+                >
+                  View Profile
+                </Link>
+                <Link 
+                  href={`/dashboard/profile/edit/${session?.user?.id || ''}`}
+                  className="inline-flex items-center justify-center rounded-lg border border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 text-xs font-semibold px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                  aria-label="Edit Profile"
+                >
+                  Edit Profile
+                </Link>
+              </div>
             </>
           }
           icon="👋"
           className="border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-lg p-4"
+        />
+
+        {/* Explore Members Directory Card */}
+        <Card
+          value={
+            <>
+              <p className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                Explore Members Directory
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Connect with IBPC members and access their professional details. Build stronger
+                networks, discover opportunities, and grow within IBPC vibrant business community.
+              </p>
+              <Link
+                href="/dashboard/members"
+                className="inline-flex items-center justify-center rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                aria-label="View Members"
+              >
+                View Members
+              </Link>
+            </>
+          }
+          icon="🧭"
+          className="border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-lg p-4"
         />
 
         {/* Profile Status Card */}

@@ -55,22 +55,13 @@ export default function RegistrationStepper({ onComplete }) {
           form.name.trim() &&
           form.profession.trim() &&
           form.companyName.trim() &&
-          form.businessActivity.trim() &&
-          form.sponsorName.trim() &&
-          form.industrySector &&
-          form.companyAddress.trim() &&
-          form.companyWebsite.trim() &&
           form.nationality &&
           form.membershipType
         );
       case 1:
-        return (
-          form.passportNumber.trim() &&
-          form.civilId.trim()
-        );
+        return true;
       case 2:
         return (
-          form.address.trim() &&
           form.mobile.trim() &&
           form.email.trim() &&
           emailRegex.test(form.email)
@@ -78,10 +69,7 @@ export default function RegistrationStepper({ onComplete }) {
       case 3:
         return true; // Always valid since fields are optional
       case 4:
-        return (
-          form.proposer1.trim() &&
-          form.proposer2.trim()
-        );
+        return true;
       case 5:
         return form.consent;
       default:
@@ -241,7 +229,7 @@ export default function RegistrationStepper({ onComplete }) {
                     required
                   />
                   <label htmlFor="name" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Full Name
+                    Full Name <span className="text-red-500">*</span>
                   </label>
                 </div>
                 {/* Repeat for all other fields in this section, using two columns */}
@@ -257,7 +245,7 @@ export default function RegistrationStepper({ onComplete }) {
                     required
                   />
                   <label htmlFor="profession" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Profession & Designation
+                    Profession & Designation <span className="text-red-500">*</span>
                   </label>
                 </div>
                 <div className="relative">
@@ -272,7 +260,7 @@ export default function RegistrationStepper({ onComplete }) {
                     required
                   />
                   <label htmlFor="companyName" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Company Name
+                    Company Name <span className="text-red-500">*</span>
                   </label>
                 </div>
                 {/* New: Company Address */}
@@ -285,7 +273,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="companyAddress"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Company Address"
-                    required
                   />
                   <label htmlFor="companyAddress" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Company Address
@@ -301,7 +288,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="companyWebsite"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Company Website"
-                    required
                   />
                   <label htmlFor="companyWebsite" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Company Website
@@ -316,7 +302,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="businessActivity"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Business Activity Type"
-                    required
                   />
                   <label htmlFor="businessActivity" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Business Activity Type
@@ -330,7 +315,6 @@ export default function RegistrationStepper({ onComplete }) {
                     onChange={handleChange}
                     id="industrySector"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
-                    required
                   >
                     <option value="">Select Industry Sector</option>
                     {INDUSTRY_SECTORS.map((sector) => (
@@ -368,7 +352,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="sponsorName"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Kuwaiti Sponsor/Partner Name"
-                    required
                   />
                   <label htmlFor="sponsorName" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Kuwaiti Sponsor/Partner Name
@@ -390,7 +373,7 @@ export default function RegistrationStepper({ onComplete }) {
                     <option value="OTHERS">OTHERS</option>
                   </select>
                   <label htmlFor="nationality" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Nationality
+                    Nationality <span className="text-red-500">*</span>
                   </label>
                 </div>
                 {/* New: Membership Type Dropdown */}
@@ -410,7 +393,7 @@ export default function RegistrationStepper({ onComplete }) {
                     <option value="Honorary Member">Honorary Member</option>
                   </select>
                   <label htmlFor="membershipType" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Membership Type
+                    Membership Type <span className="text-red-500">*</span>
                   </label>
                 </div>
                 {/* Photo Picker */}
@@ -464,7 +447,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="passportNumber"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Indian Passport Number"
-                    required
                   />
                   <label htmlFor="passportNumber" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Indian Passport Number
@@ -479,7 +461,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="civilId"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Kuwait Civil ID Number"
-                    required
                   />
                   <label htmlFor="civilId" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Kuwait Civil ID Number
@@ -502,7 +483,6 @@ export default function RegistrationStepper({ onComplete }) {
                   className={`${inputClass} peer pt-6 placeholder-transparent`}
                   placeholder="Address in Kuwait"
                   rows="2"
-                  required
                 />
                 <label htmlFor="address" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                   Address in Kuwait
@@ -522,7 +502,7 @@ export default function RegistrationStepper({ onComplete }) {
                     required
                   />
                   <label htmlFor="mobile" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Mobile
+                    Mobile <span className="text-red-500">*</span>
                   </label>
                 </div>
                 <div className="relative">
@@ -569,7 +549,7 @@ export default function RegistrationStepper({ onComplete }) {
                     required
                   />
                   <label htmlFor="email" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                    Email Address
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                 </div>
                 <div className="relative">
@@ -639,7 +619,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="proposer1"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="First IBPC Member Proposer"
-                    required
                   />
                   <label htmlFor="proposer1" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     First IBPC Member Proposer
@@ -654,7 +633,6 @@ export default function RegistrationStepper({ onComplete }) {
                     id="proposer2"
                     className={`${inputClass} peer pt-6 placeholder-transparent`}
                     placeholder="Second IBPC Member Proposer"
-                    required
                   />
                   <label htmlFor="proposer2" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
                     Second IBPC Member Proposer

@@ -160,36 +160,9 @@ export default function ViewProfile() {
                 <div className="flex justify-between">
                   <dt className="text-gray-600 dark:text-gray-300">Membership Validity</dt>
                   <dd className="font-medium text-gray-900 dark:text-white">
-                    {isAdmin ? (
-                      <>
-                        <select
-                          value={validityEdit || profile.membershipValidity || ""}
-                          onChange={e => setValidityEdit(e.target.value)}
-                          className="border rounded px-2 py-1 text-sm"
-                        >
-                          <option value="">Select Year</option>
-                          {Array.from({ length: 11 }, (_, i) => {
-                            const year = new Date().getFullYear() + i;
-                            return <option key={year} value={year}>{year}</option>;
-                          })}
-                        </select>
-                        <button
-                          className="ml-2 px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                          onClick={async () => {
-                            if (!validityEdit) return;
-                            await fetch(`/api/users/${profile._id}`, {
-                              method: 'PATCH',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ membershipValidity: validityEdit })
-                            });
-                            setValidityEdit("");
-                            window.location.reload();
-                          }}
-                        >Save</button>
-                      </>
-                    ) : (
+                  
                       <span>{profile.membershipValidity || "Not set"}</span>
-                    )}
+          
                   </dd>
                 </div>
               </dl>

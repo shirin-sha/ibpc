@@ -1,6 +1,6 @@
-export default function Card({ title, value, icon }) {
+export default function Card({ title, value, icon, className = '' }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex items-center gap-4">
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex items-center gap-4 ${className}`}>
       <div className="text-3xl">{icon}</div>
       <div>
         <div className="text-gray-500 dark:text-gray-400">{title}</div>
