@@ -146,6 +146,19 @@ export async function POST(request) {
       return NextResponse.json({ message: validationError }, { status: 400 });
     }
 
+    // Normalize email for deduplication
+    const normalizedEmail = String(data.email || '').trim().toLowerCase();
+    data.email = normalizedEmail;
+
+    // Duplicate email checks across Registration and User
+    const [existingReg, existingUser] = await Promise.all([
+      Registration.findOne({ email: normalizedEmail, status: { $ne: 'Rejected' } }),
+      User.findOne({ email: normalizedEmail }),
+    ]);
+    if (existingReg || existingUser) {
+      return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
+    }
+
     let photoKey = ''; // Changed to photoKey for clarity
     if (photo && photo.size > 0) {
       photoKey = await uploadToB2(photo); // Get KEY from B2 upload
