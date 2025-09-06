@@ -63,6 +63,24 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
+    // Client-side required fields validation
+    const requiredFields = {
+      name: 'Full Name',
+      profession: 'Profession',
+      companyName: 'Company Name',
+      membershipType: 'Membership Type',
+      email: 'Email',
+      mobile: 'Mobile Number',
+      nationality: 'Nationality',
+    };
+    const missing = Object.entries(requiredFields)
+      .filter(([key]) => !formData[key] || String(formData[key]).trim() === '')
+      .map(([, label]) => label);
+    if (missing.length) {
+      setIsSaving(false);
+      alert(`Please fill the required fields: ${missing.join(', ')}`);
+      return;
+    }
     const data = new FormData();
 
     // Append form fields
@@ -115,9 +133,9 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Personal Information</h2>
               <p className="mt-1 text-sm leading-6 text-gray-600">This information is managed by the administration.</p>
             </div>
-            <div className="sm:col-span-3"><FormField label="Full Name" name="name" value={formData.name} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Email" name="email" value={formData.email} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Full Name" name="name" value={formData.name} onChange={handleChange} disabled={isMember} required /></div>
+            <div className="sm:col-span-3"><FormField label="Email" name="email" value={formData.email} onChange={handleChange} disabled={isMember} required /></div>
+            <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} disabled={isMember} required /></div>
             <div className="sm:col-span-3"><FormField label="Office Phone" name="officePhone" value={formData.officePhone} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-6"><TextAreaField label="Address in Kuwait" name="address" value={formData.address} onChange={handleChange} rows={2} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Member ID" name="memberId" value={formData.memberId} onChange={handleChange} disabled={isMember} /></div>
@@ -148,20 +166,21 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-6 pt-8">
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Company & Profession</h2>
             </div>
-            <div className="sm:col-span-3"><FormField label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Profession & Designation" name="profession" value={`${formData.profession}`} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} disabled={isMember} required /></div>
+            <div className="sm:col-span-3"><FormField label="Profession & Designation" name="profession" value={`${formData.profession}`} onChange={handleChange} disabled={isMember} required /></div>
             <div className="sm:col-span-3"><FormField label="Type of Business Activity" name="businessActivity" value={formData.businessActivity} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Kuwaiti Sponsor/Partner Name" name="sponsorName" value={formData.sponsorName} onChange={handleChange} disabled={isMember} /></div>
             
             {/* New: Nationality Field */}
             <div className="sm:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nationality<span className="text-red-600"> *</span></label>
               <select
                 name="nationality"
                 value={formData.nationality}
                 onChange={handleChange}
                 disabled={isMember}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                required
               >
                 <option value="">Select Nationality</option>
                 <option value="INDIAN">INDIAN</option>
@@ -172,13 +191,14 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             
             {/* New: Membership Type Field */}
             <div className="sm:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Membership Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Membership Type<span className="text-red-600"> *</span></label>
               <select
                 name="membershipType"
                 value={formData.membershipType}
                 onChange={handleChange}
                 disabled={isMember}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                required
               >
                 <option value="">Select Membership Type</option>
                 <option value="Individual Member">Individual Member</option>
