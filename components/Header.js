@@ -34,7 +34,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
-            <Link href="/dashboard" className="flex items-center space-x-3">
+            <Link href={isAdmin ? "/dashboard/admin" : "/dashboard"} className="flex items-center space-x-3" onClick={()=>{console.log(isAdmin)}}>
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-50">
                 <img 
                   src="/logo.png" 

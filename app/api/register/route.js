@@ -253,7 +253,7 @@ export async function POST(request) {
           </p>
         </div>
       </div>
-      <div class="footer">This is an automated message. Please do not reply.</div>
+        <div class="footer">This is an automated message. Please do not reply.</div>
     </div>
   </body>
 </html>`
@@ -438,7 +438,7 @@ export async function PUT(req) {
           </p>
         </div>
       </div>
-      <div class="footer">This is an automated message. Please do not reply.</div>
+        <div class="footer">This is an automated message. Please do not reply.</div>
     </div>
   </body>
 </html>`
