@@ -225,7 +225,7 @@ export async function POST(request) {
             If your application is approved, you will receive a follow-up email with:
           </p>
           <ul class="list">
-            <li>Your <b>IBPC Unique ID</b></li>
+            <li>Your <b>IBPC Member ID</b> and <b>Unique ID</b></li>
             <li>Your <b>login credentials</b> for the MMS portal</li>
             <li>Guidelines on how to access <b>member-exclusive features and benefits</b></li>
           </ul>
@@ -283,7 +283,7 @@ export async function GET() {
     // Add signed URLs
     registrations = await addSignedUrls(registrations);
     const res = NextResponse.json(registrations);
-    res.headers.set('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+    res.headers.set('Cache-Control', 'no-store, must-revalidate');
     return res;
   } catch (error) {
     console.error('GET Error:', error);
@@ -319,6 +319,48 @@ export async function PUT(req) {
     }
     const uniqueId = String(nextUniqueId).padStart(5, '0');
 
+    // Generate memberId based on membershipType
+    let memberId;
+    const membershipType = reg.membershipType || '';
+    
+    if (membershipType === 'Corporate Member') {
+      // Corporate: C10000, C10001, etc.
+      const lastCorporate = await User.findOne({ memberId: { $regex: /^C\d+$/ } }).sort({ memberId: -1 });
+      let nextNum = 10000;
+      if (lastCorporate && lastCorporate.memberId) {
+        const lastNum = parseInt(lastCorporate.memberId.substring(1));
+        nextNum = Math.max(lastNum + 1, 10000);
+      }
+      memberId = `C${nextNum}`;
+    } else if (membershipType === 'Individual Member') {
+      // Individual: I10000, I10001, etc.
+      const lastIndividual = await User.findOne({ memberId: { $regex: /^I\d+$/ } }).sort({ memberId: -1 });
+      let nextNum = 10000;
+      if (lastIndividual && lastIndividual.memberId) {
+        const lastNum = parseInt(lastIndividual.memberId.substring(1));
+        nextNum = Math.max(lastNum + 1, 10000);
+      }
+      memberId = `I${nextNum}`;
+    } else if (membershipType === 'Special Honorary Member') {
+      // Special Honorary: S10000, S10001, etc.
+      const lastSpecialHonorary = await User.findOne({ memberId: { $regex: /^S\d+$/ } }).sort({ memberId: -1 });
+      let nextNum = 10000;
+      if (lastSpecialHonorary && lastSpecialHonorary.memberId) {
+        const lastNum = parseInt(lastSpecialHonorary.memberId.substring(1));
+        nextNum = Math.max(lastNum + 1, 10000);
+      }
+      memberId = `S${nextNum}`;
+    } else {
+      // Honorary Member: H10000, H10001, etc.
+      const lastHonorary = await User.findOne({ memberId: { $regex: /^H\d+$/ } }).sort({ memberId: -1 });
+      let nextNum = 10000;
+      if (lastHonorary && lastHonorary.memberId) {
+        const lastNum = parseInt(lastHonorary.memberId.substring(1));
+        nextNum = Math.max(lastNum + 1, 10000);
+      }
+      memberId = `H${nextNum}`;
+    }
+
     const username = reg.email;
     const rawPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
@@ -329,6 +371,7 @@ export async function PUT(req) {
       password: hashedPassword,
       role: 'member',
       uniqueId,
+      memberId,
       companyName: reg.companyName,
       profession: reg.profession,
       designation: reg.designation,
@@ -358,12 +401,13 @@ export async function PUT(req) {
     await user.save();
     reg.status = 'Approved';
     reg.uniqueId = uniqueId;
+    reg.memberId = memberId;
     await reg.save();
 
     await sendMail({
       to: reg.email,
       subject: 'Your New IBPC Kuwait MMS Login Credentials',
-      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Unique ID: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://ibpckuwait.vercel.app\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
+      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Member ID: ${memberId}\n• Unique ID: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://ibpckuwait.vercel.app\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
       html: `<!doctype html>
 <html>
   <head>
@@ -404,6 +448,7 @@ export async function PUT(req) {
             Please find your login details below:
           </p>
           <ul class="list">
+            <li><strong>Member ID:</strong> <span class="kbd">${memberId}</span></li>
             <li><strong>Unique ID:</strong> <span class="kbd">${uniqueId}</span></li>
             <li><strong>Username:</strong> <span class="kbd">${username}</span></li>
             <li><strong>Password:</strong> <span class="kbd">${rawPassword}</span></li>

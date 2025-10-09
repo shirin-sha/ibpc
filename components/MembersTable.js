@@ -150,10 +150,16 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                       <SortIcon field="name" />
                     </div>
                   </th>
-                  <th onClick={() => handleSort('_id')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <th onClick={() => handleSort('memberId')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                    <div className="flex items-center">
+                      <span>Member ID</span>
+                      <SortIcon field="memberId" />
+                    </div>
+                  </th>
+                  <th onClick={() => handleSort('uniqueId')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                     <div className="flex items-center">
                       <span>Unique ID</span>
-                      <SortIcon field="_id" />
+                      <SortIcon field="uniqueId" />
                     </div>
                   </th>
                   <th onClick={() => handleSort('phone')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">

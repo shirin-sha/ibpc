@@ -64,13 +64,14 @@ export async function GET(req) {
         $or: [
           { name: { $regex: q, $options: 'i' } },
           { mobile: { $regex: q, $options: 'i' } },
-          { uniqueId: { $regex: q, $options: 'i' } }
+          { uniqueId: { $regex: q, $options: 'i' } },
+          { memberId: { $regex: q, $options: 'i' } }
         ]
       };
     }
 
     const cursor = User.find(filter)
-      .select('name email mobile uniqueId companyName profession designation social photo industrySector')
+      .select('name email mobile uniqueId memberId companyName profession designation social photo industrySector')
       .sort({ createdAt: -1 })
       .skip((page - 1) * size)
       .limit(size)
@@ -90,7 +91,7 @@ export async function GET(req) {
       total,
       totalPages: Math.ceil(total / size),
     });
-    res.headers.set('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+    res.headers.set('Cache-Control', 'no-store, must-revalidate');
     return res;
   } catch (error) {
     console.error('GET Error:', error);

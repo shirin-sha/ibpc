@@ -134,6 +134,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Office Phone" name="officePhone" value={formData.officePhone} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-6"><TextAreaField label="Address in Kuwait" name="address" value={formData.address} onChange={handleChange} rows={2} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Member ID" name="memberId" value={formData.memberId} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Unique ID" name="uniqueId" value={formData.uniqueId} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Passport Number" name="passportNumber" value={formData.passportNumber} onChange={handleChange} disabled={isMember} /></div>
             <div className="sm:col-span-3"><FormField label="Kuwait Civil ID Number" name="civilId" value={formData.civilId} onChange={handleChange} disabled={isMember} /></div>

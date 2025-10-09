@@ -20,8 +20,7 @@ export default function ViewProfile() {
     const fetchProfile = async () => {
       try {
         const res = await fetch(`/api/users/${id}`, {
-          cache: 'force-cache',
-          next: { revalidate: 60 } // Cache for 60 seconds
+          cache: 'no-store' // Always fetch fresh data
         });
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
@@ -75,9 +74,14 @@ export default function ViewProfile() {
             <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">
               {profile.profession} at {profile.companyName}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Unique ID: {profile.uniqueId || 'N/A'}
-            </p>
+            <div className="flex gap-4 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Member ID: <span className="font-medium text-gray-700 dark:text-gray-300">{profile.memberId || 'N/A'}</span>
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Unique ID: <span className="font-medium text-gray-700 dark:text-gray-300">{profile.uniqueId || 'N/A'}</span>
+              </p>
+            </div>
           </div>
 
           {/* Sections Grid */}
@@ -94,6 +98,12 @@ export default function ViewProfile() {
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
               <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Personal Information</h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Member ID:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.memberId || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Unique ID:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.uniqueId || 'N/A'}</dd>
+                
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Profession:</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
                 
@@ -165,32 +175,43 @@ export default function ViewProfile() {
             {/* Contact Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
               <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Contact Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3">
-                  <EnvelopeIcon className="w-5 h-5 text-blue-500" />
-                  <span>{profile.email || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <PhoneIcon className="w-5 h-5 text-green-500" />
-                  <span>Mobile: {profile.mobile || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <PhoneIcon className="w-5 h-5 text-green-500" />
-                  <span>Office: {profile.officePhone || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <GlobeAltIcon className="w-5 h-5 text-purple-500" />
-                  <span>Address: {profile.address || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <PhoneIcon className="w-5 h-5 text-green-500" />
-                  <span>Alternate Mobile: {profile.alternateMobile || 'N/A'}</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <EnvelopeIcon className="w-5 h-5 text-blue-500" />
-                  <span>Alternate Email: {profile.alternateEmail || 'N/A'}</span>
-                </div>
-              </div>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <EnvelopeIcon className="w-4 h-4 text-blue-500" />
+                  Email:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.email || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <PhoneIcon className="w-4 h-4 text-green-500" />
+                  Mobile:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.mobile || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <PhoneIcon className="w-4 h-4 text-green-500" />
+                  Office Phone:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.officePhone || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <GlobeAltIcon className="w-4 h-4 text-purple-500" />
+                  Address:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.address || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <PhoneIcon className="w-4 h-4 text-green-500" />
+                  Alternate Mobile:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateMobile || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
+                  <EnvelopeIcon className="w-4 h-4 text-blue-500" />
+                  Alternate Email:
+                </dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateEmail || 'N/A'}</dd>
+              </dl>
             </div>
 
             {/* Sponsorship Card - NEW */}

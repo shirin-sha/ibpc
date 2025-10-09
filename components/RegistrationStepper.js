@@ -427,7 +427,7 @@ function RegistrationStepper({ onComplete }) {
       <div className="bg-white rounded-xl px-10 py-4 md:px-12 md:py-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           {currentStepContent}
-          
+
           <div className="flex flex-col-reverse sm:flex-row justify-between pt-4 mt-6 border-t gap-2">
             <button
               type="button"
