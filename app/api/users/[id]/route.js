@@ -106,6 +106,9 @@ export async function PATCH(req, { params }) {
     // Parse multipart form data
     const formData = await req.formData();
     
+    // Define which fields members can edit
+    const memberEditableFields = ['companyBrief', 'about', 'linkedin', 'instagram', 'twitter', 'facebook'];
+    
     // Prepare update object
     const updateData = {};
     const socialLinks = {};
@@ -131,8 +134,10 @@ export async function PATCH(req, { params }) {
           }
         }
       } else {
-        // Handle other fields
-        updateData[key] = value;
+        // Handle other fields - apply role-based restrictions
+        if (isAdmin || memberEditableFields.includes(key)) {
+          updateData[key] = value;
+        }
       }
     }
 
@@ -140,6 +145,10 @@ export async function PATCH(req, { params }) {
     if (Object.keys(socialLinks).length > 0) {
       updateData.social = socialLinks;
     }
+
+    // Debug logging
+    console.log('Update data being sent to database:', updateData);
+    console.log('About field value:', updateData.about);
 
     // Update user
     const updatedUser = await User.findByIdAndUpdate(

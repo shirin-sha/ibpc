@@ -184,7 +184,7 @@ export async function POST(request) {
       await sendMail({
         to: registration.email,
         subject: 'Thank You for Registering with IBPC Kuwait Membership System',
-        text: `Dear ${registration.name},\n\nThank you for registering with the Indian Business & Professional Council (IBPC) Kuwait – Membership Management System (MMS).\n\nWe have successfully received your application. Our team will carefully review the information you have provided. If your application is approved, you will receive a follow-up email with:\n\n• Your IBPC Member ID\n• Your login credentials for the MMS portal\n• Guidelines on how to access member-exclusive features and benefits\n\nIn the meantime, please ensure that all the details provided are correct. If any additional information is required, our team will contact you directly.\n\n📩 For support or queries:\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 You can also visit our website at www.ibpckuwait.org to learn more about IBPC’s activities, upcoming events, and member benefits.\n\nWe appreciate your interest in becoming a part of our thriving community of professionals, entrepreneurs, and business leaders. We look forward to welcoming you as a valued member of IBPC Kuwait.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
+        text: `Dear ${registration.name},\n\nThank you for registering with the Indian Business & Professional Council (IBPC) Kuwait – Membership Management System (MMS).\n\nWe have successfully received your application. Our team will carefully review the information you have provided. If your application is approved, you will receive a follow-up email with:\n\n• Your IBPC Unique ID\n• Your login credentials for the MMS portal\n• Guidelines on how to access member-exclusive features and benefits\n\nIn the meantime, please ensure that all the details provided are correct. If any additional information is required, our team will contact you directly.\n\n📩 For support or queries:\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 You can also visit our website at www.ibpckuwait.org to learn more about IBPC’s activities, upcoming events, and member benefits.\n\nWe appreciate your interest in becoming a part of our thriving community of professionals, entrepreneurs, and business leaders. We look forward to welcoming you as a valued member of IBPC Kuwait.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
         html: `<!doctype html>
 <html>
   <head>
@@ -225,7 +225,7 @@ export async function POST(request) {
             If your application is approved, you will receive a follow-up email with:
           </p>
           <ul class="list">
-            <li>Your <b>IBPC Member ID</b></li>
+            <li>Your <b>IBPC Unique ID</b></li>
             <li>Your <b>login credentials</b> for the MMS portal</li>
             <li>Guidelines on how to access <b>member-exclusive features and benefits</b></li>
           </ul>
@@ -311,13 +311,13 @@ export async function PUT(req) {
       return NextResponse.json({ error: 'Already approved' }, { status: 400 });
     }
 
-    // Generate next 5-digit memberId (numbers only, start at 10001)
-    const lastUser = await User.findOne({ memberId: { $regex: /^\d{5}$/ } }).sort({ memberId: -1 });
-    let nextMemberId = 10001;
-    if (lastUser && lastUser.memberId && !isNaN(Number(lastUser.memberId))) {
-      nextMemberId = Math.max(Number(lastUser.memberId) + 1, 10001);
+    // Generate next 5-digit uniqueId (numbers only, start at 10001)
+    const lastUser = await User.findOne({ uniqueId: { $regex: /^\d{5}$/ } }).sort({ uniqueId: -1 });
+    let nextUniqueId = 10001;
+    if (lastUser && lastUser.uniqueId && !isNaN(Number(lastUser.uniqueId))) {
+      nextUniqueId = Math.max(Number(lastUser.uniqueId) + 1, 10001);
     }
-    const memberId = String(nextMemberId).padStart(5, '0');
+    const uniqueId = String(nextUniqueId).padStart(5, '0');
 
     const username = reg.email;
     const rawPassword = Math.random().toString(36).slice(-8);
@@ -328,7 +328,7 @@ export async function PUT(req) {
       email: reg.email,
       password: hashedPassword,
       role: 'member',
-      memberId,
+      uniqueId,
       companyName: reg.companyName,
       profession: reg.profession,
       designation: reg.designation,
@@ -357,13 +357,13 @@ export async function PUT(req) {
     });
     await user.save();
     reg.status = 'Approved';
-    reg.memberId = memberId;
+    reg.uniqueId = uniqueId;
     await reg.save();
 
     await sendMail({
       to: reg.email,
       subject: 'Your New IBPC Kuwait MMS Login Credentials',
-      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Member ID: ${memberId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://ibpckuwait.vercel.app\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
+      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Unique ID: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://ibpckuwait.vercel.app\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
       html: `<!doctype html>
 <html>
   <head>
@@ -404,7 +404,7 @@ export async function PUT(req) {
             Please find your login details below:
           </p>
           <ul class="list">
-            <li><strong>Member ID:</strong> <span class="kbd">${memberId}</span></li>
+            <li><strong>Unique ID:</strong> <span class="kbd">${uniqueId}</span></li>
             <li><strong>Username:</strong> <span class="kbd">${username}</span></li>
             <li><strong>Password:</strong> <span class="kbd">${rawPassword}</span></li>
             <li><strong>Login Portal:</strong> <a href="https://ibpckuwait.vercel.app" target="_blank" rel="noopener">https://ibpckuwait.vercel.app</a></li>

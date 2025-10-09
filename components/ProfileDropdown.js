@@ -8,7 +8,7 @@ export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const router = useRouter();
-  const { data: session, status } = useSession(); 
+  const { data: session } = useSession(); 
   const isAdmin = session?.user?.role === 'admin';
   
   useEffect(() => {
@@ -21,9 +21,9 @@ export default function ProfileDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push("/login");
+  const handleLogout = () => {
+    // Fast logout - let NextAuth handle the redirect automatically
+    signOut({ callbackUrl: "/login", redirect: true });
   };
 
   return (

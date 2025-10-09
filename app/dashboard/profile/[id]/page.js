@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
+import Image from 'next/image';
 
 export default function ViewProfile() {
   const { id } = useParams();
@@ -19,7 +19,10 @@ export default function ViewProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`/api/users/${id}`);
+        const res = await fetch(`/api/users/${id}`, {
+          cache: 'force-cache',
+          next: { revalidate: 60 } // Cache for 60 seconds
+        });
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
         setProfile(data);
@@ -30,12 +33,12 @@ export default function ViewProfile() {
         setLoading(false);
       }
     };
-    fetchProfile();
+    if (id) fetchProfile();
   }, [id, router]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
     </div>
   );
 
@@ -51,19 +54,16 @@ export default function ViewProfile() {
         </Link>
 
         {/* Profile Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
-        >
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           {/* Header Section */}
           <div className="relative h-48 bg-gradient-to-r from-gray-800 to-red-500">
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
               <img
                 src={profile.photo || '/logo.png'}
                 alt={profile.name}
-                loading="lazy"
+                loading="eager"
+                width={128}
+                height={128}
                 className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
               />
             </div>
@@ -76,132 +76,95 @@ export default function ViewProfile() {
               {profile.profession} at {profile.companyName}
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Member ID: {profile._id?.slice(-6) || 'N/A'}
+              Unique ID: {profile.uniqueId || 'N/A'}
             </p>
           </div>
 
           {/* Sections Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-8 pb-8">
+            {/* About Section */}
+            {profile.about && (
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
+                <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">About</h2>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{profile.about}</p>
+              </div>
+            )}
+
             {/* Personal Info Card */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Personal Information</h2>
-              <dl className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Profession</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Nationality</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.nationality || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Membership Type</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipType || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Passport Number</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Civil ID</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Sponsor Name</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.sponsorName || 'N/A'}</dd>
-                </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Personal Information</h2>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Profession:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Nationality:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.nationality || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Membership Type:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipType || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Passport Number:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Civil ID:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Sponsor Name:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.sponsorName || 'N/A'}</dd>
               </dl>
-            </motion.div>
+            </div>
 
             {/* Company Info Card */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Company Information</h2>
-              <dl className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Company Name</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Business Activity</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.businessActivity || 'N/A'}</dd>
-                </div>
-                <div>
-                  <dt className="text-gray-600 dark:text-gray-300 mb-1">Company Brief</dt>
-                  <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Company Address</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyAddress || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Company Website</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.companyWebsite || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Industry Sector</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">{profile.industrySector || 'N/A'}</dd>
-                </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Company Information</h2>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Name:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Business Activity:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.businessActivity || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap self-start">Company Brief:</dt>
+                <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Address:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyAddress || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Website:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyWebsite || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Industry Sector:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.industrySector || 'N/A'}</dd>
+                
                 {profile.alternateIndustrySector && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600 dark:text-gray-300">Alternate Industry Sector</dt>
+                  <>
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Alternate Sector:</dt>
                     <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateIndustrySector}</dd>
-                  </div>
+                  </>
                 )}
-                <div className="flex justify-between">
-                  <dt className="text-gray-600 dark:text-gray-300">Membership Validity</dt>
-                  <dd className="font-medium text-gray-900 dark:text-white">
-                  
-                      <span>{profile.membershipValidity || "Not set"}</span>
-          
-                  </dd>
-                </div>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Membership Validity:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipValidity || "Not set"}</dd>
               </dl>
-            </motion.div>
+            </div>
 
             {/* Identification Details Card - NEW */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <IdentificationIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
                 Identification Details
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600 dark:text-gray-300">Passport Number</dt>
-                    <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600 dark:text-gray-300">Civil ID</dt>
-                    <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
-                  </div>
-                </div>
-             
-              </div>
-            </motion.div>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Passport Number:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
+                
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Civil ID:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
+              </dl>
+            </div>
 
             {/* Contact Info Card */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Contact Details</h2>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Contact Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center space-x-3">
                   <EnvelopeIcon className="w-5 h-5 text-blue-500" />
@@ -228,49 +191,32 @@ export default function ViewProfile() {
                   <span>Alternate Email: {profile.alternateEmail || 'N/A'}</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Sponsorship Card - NEW */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <UserGroupIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
                 Sponsorship
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               
-                {/* Add more sponsorship details if available in your profile data */}
-            
-                  <div className="space-y-3">
-                    {profile.proposer1 && (
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600 dark:text-gray-300">First Proposer:</dt>
-                        <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer1}</dd>
-                      </div>
-                    )}
-                    {profile.proposer2 && (
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600 dark:text-gray-300">Second Proposer:</dt>
-                        <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer2}</dd>
-                      </div>
-                    )}
-                  </div>
-               
-              </div>
-            </motion.div>
+              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                {profile.proposer1 && (
+                  <>
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">First Proposer:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer1}</dd>
+                  </>
+                )}
+                {profile.proposer2 && (
+                  <>
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Second Proposer:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.proposer2}</dd>
+                  </>
+                )}
+              </dl>
+            </div>
 
             {/* Social Media Card */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2"
-            >
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Social Media</h2>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Social Media</h2>
               <div className="flex space-x-6">
                 {profile.social?.linkedin && <a href={profile.social.linkedin} className="text-blue-600 hover:text-blue-800">LinkedIn</a>}
                 {profile.social?.instagram && <a href={profile.social.instagram} className="text-pink-600 hover:text-pink-800">Instagram</a>}
@@ -278,9 +224,9 @@ export default function ViewProfile() {
                 {profile.social?.facebook && <a href={profile.social.facebook} className="text-blue-600 hover:text-blue-800">Facebook</a>}
                 {!Object.keys(profile.social || {}).length && <p className="text-gray-500">No social links available</p>}
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

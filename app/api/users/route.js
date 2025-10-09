@@ -64,13 +64,13 @@ export async function GET(req) {
         $or: [
           { name: { $regex: q, $options: 'i' } },
           { mobile: { $regex: q, $options: 'i' } },
-          { memberId: { $regex: q, $options: 'i' } }
+          { uniqueId: { $regex: q, $options: 'i' } }
         ]
       };
     }
 
     const cursor = User.find(filter)
-      .select('name email mobile memberId companyName profession designation social photo industrySector')
+      .select('name email mobile uniqueId companyName profession designation social photo industrySector')
       .sort({ createdAt: -1 })
       .skip((page - 1) * size)
       .limit(size)
@@ -121,7 +121,7 @@ export async function PATCH(req) {
     const { id, updates, role } = await req.json();
 
     // Define editable fields
-    const editableByUser = ['companyBrief', 'logo', 'social'];
+    const editableByUser = ['companyBrief', 'about', 'logo', 'social'];
     let allowedFields = role === 'admin'
       ? Object.keys(User.schema.paths).filter(f => f !== 'password' && f !== '_id' && f !== '__v')
       : editableByUser;

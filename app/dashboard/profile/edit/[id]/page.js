@@ -18,12 +18,13 @@ export default function ProfilePage() {
     const fetchUser = useCallback(() => {
         if (!id) return;
 
-        console.log('Fetching user with ID:', id);
-
         setLoading(true);
         setError(null);
 
-        fetch(`/api/users/${id}`)
+        fetch(`/api/users/${id}`, {
+            cache: 'force-cache',
+            next: { revalidate: 60 } // Cache for 60 seconds
+        })
             .then(res => {
                 if (!res.ok) {
                     throw new Error(`Fetch failed with status ${res.status}: ${res.statusText}`);
@@ -46,14 +47,17 @@ export default function ProfilePage() {
 
     useEffect(() => {
         if (status === 'loading' || !id) {
-            console.log('Waiting for session to load or ID from URL. ID not ready yet:', id);
             return;
         }
 
         fetchUser();
     }, [id, status, fetchUser]);
 
-    if (status === 'loading' || loading) return <div>Loading...</div>;
+    if (status === 'loading' || loading) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        </div>
+    );
     if (error) return <div>Error: {error} (Check console for details or try refreshing)</div>;
     if (!session || !user) return <div>Error: Unable to load profile. Please log in again.</div>;
 

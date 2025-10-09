@@ -152,7 +152,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                   </th>
                   <th onClick={() => handleSort('_id')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                     <div className="flex items-center">
-                      <span>Member ID</span>
+                      <span>Unique ID</span>
                       <SortIcon field="_id" />
                     </div>
                   </th>
@@ -187,7 +187,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                 <>
                   {/* Member Columns */}
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Member ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Unique ID</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Designation</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Company</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Email</th>
@@ -260,7 +260,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.memberId}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.uniqueId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.mobile}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
@@ -351,7 +351,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.memberId}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.uniqueId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.profession}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>
