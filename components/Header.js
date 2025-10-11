@@ -4,20 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "./ProfileDropdown";
 import { BellIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useSession } from "next-auth/react";
 
-export default function Header() {
+export default function Header({ session }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { data: session, status } = useSession(); 
   const isAdmin = session?.user?.role === 'admin';
 
   // Memoize navigation links to prevent unnecessary re-renders
   const navigationLinks = useMemo(() => [
-    { href: isAdmin ? "/dashboard/admin" : "/dashboard", label: "Dashboard" },
-    { href: "/dashboard/members", label: "Members" },
-    { href: "/dashboard/admin/registrations", label: "Registrations", role: "admin" },
-    { href: "/dashboard/members", label: "Contact Admin", role: "member" },
+    { href: isAdmin ? "/admin" : "/member", label: "DASHBOARD" },
+    { href: isAdmin ? "/admin/members" : "/member/directory", label: "MEMBERS" },
+    { href: "/admin/registrations", label: "REGISTRATIONS", role: "admin" },
+    { href: "/member/directory", label: "CONTACT ADMIN", role: "member" },
   ], [isAdmin]);
 
   // Memoize filtered links
@@ -34,7 +32,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
-            <Link href={isAdmin ? "/dashboard/admin" : "/dashboard"} className="flex items-center space-x-3" onClick={()=>{console.log(isAdmin)}}>
+            <Link href={isAdmin ? "/admin" : "/member"} className="flex items-center space-x-3" onClick={()=>{console.log(isAdmin)}}>
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-50">
                 <img 
                   src="/logo.png" 
@@ -79,7 +77,7 @@ export default function Header() {
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full" style={{ backgroundColor: '#e74c3c' }}></span>
             </button>
             
-            <ProfileDropdown />
+            <ProfileDropdown session={session} />
 
             {/* Mobile Menu Button */}
             <button

@@ -78,8 +78,8 @@ export async function middleware(req) {
       }
     }
 
-    // Define protected routes
-    const protectedPaths = ['/dashboard', '/api/users', '/api/registrations'];
+    // Define protected routes - Updated for new structure
+    const protectedPaths = ['/member', '/admin', '/api/users', '/api/registrations'];
     const isProtected = protectedPaths.some(path => url.startsWith(path));
 
     if (isProtected && !session) {
@@ -92,9 +92,9 @@ export async function middleware(req) {
       return response;
     }
 
-    // Role-based protection
-    if (url.startsWith('/dashboard/admin') && session?.role !== 'admin') {
-      const response = NextResponse.redirect(new URL('/dashboard', req.url));
+    // Role-based protection - Updated for new structure
+    if (url.startsWith('/admin') && session?.role !== 'admin') {
+      const response = NextResponse.redirect(new URL('/member', req.url));
       response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       return response;
     }
@@ -106,7 +106,7 @@ export async function middleware(req) {
     }
     
     // Add caching headers for static content (shorter duration for development)
-    if (url.startsWith('/dashboard') && session) {
+    if ((url.startsWith('/member') || url.startsWith('/admin')) && session) {
       const cacheDuration = process.env.NODE_ENV === 'development' ? 60 : 300; // 1 min for dev, 5 min for prod
       response.headers.set('Cache-Control', `private, max-age=${cacheDuration}, stale-while-revalidate=${cacheDuration * 2}`);
     }
@@ -127,7 +127,8 @@ export async function middleware(req) {
 // Config: Apply middleware only to these routes (prevents running on static files, etc.)
 export const config = {
   matcher: [
-    '/dashboard/:path*',      // Protect all dashboard routes
+    '/member/:path*',          // Protect all member routes
+    '/admin/:path*',           // Protect all admin routes
     '/api/users/:path*',       // Protect user APIs
     '/api/registrations/:path*', // Protect registration APIs
     '/login',                  // Handle login redirects

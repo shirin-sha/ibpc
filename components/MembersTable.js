@@ -304,12 +304,12 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                       </td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex justify-center space-x-3">
-                          <Link href={`/dashboard/profile/${member._id}`}>
+                          <Link href={`/member/profile/${member._id}`}>
                             <div className="text-blue-500 hover:text-blue-700 cursor-pointer transition-colors">
                               <EyeIcon className="w-5 h-5" />
                             </div>
                           </Link>
-                          <Link href={`/dashboard/profile/edit/${member._id}`}>
+                          <Link href={`/member/profile/edit/${member._id}`}>
                             <div className="text-yellow-500 hover:text-yellow-600 cursor-pointer transition-colors">
                               <PencilIcon className="w-5 h-5" />
                             </div>
@@ -356,7 +356,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.industrySector || 'N/A'}</td>
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <div className="flex justify-center space-x-3">
-                          <Link href={`/dashboard/profile/${member._id}`}>
+                          <Link href={`/member/profile/${member._id}`}>
                             <div className="text-blue-500 hover:text-blue-700 cursor-pointer transition-colors">
                               <EyeIcon className="w-5 h-5" />
                             </div>

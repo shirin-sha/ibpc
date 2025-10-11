@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon, PencilIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
@@ -47,29 +47,40 @@ export default function ViewProfile() {
     <div>
       <div>
         {/* Back Button */}
-        <Link href="/dashboard/members" className="inline-flex items-center text-gray-600 hover:text-blue-800 dark:text-gray-400 dark:hover:text-gray-300 mb-6 transition-colors">
+        <Link 
+          href={session?.user?.id === id ? "/member" : "/member/directory"} 
+          className="inline-flex items-center text-gray-600 hover:text-blue-800 dark:text-gray-400 dark:hover:text-gray-300 mb-6 transition-colors"
+        >
           <ArrowLeftIcon className="w-5 h-5 mr-2" />
-          Back to Members
+          {session?.user?.id === id ? "BACK TO DASHBOARD" : "BACK TO MEMBERS"}
         </Link>
 
         {/* Profile Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           {/* Header Section */}
           <div className="relative h-48" style={{ background: '#061E3E' }}>
+            {/* Edit Icon - Only visible when viewing own profile */}
+            {session?.user?.id === id && (
+              <Link 
+                href={`/member/profile/edit/${id}`}
+                className="absolute bottom-6 right-6 p-3 bg-white hover:bg-gray-50 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl group"
+                title="Edit Profile"
+              >
+                <PencilIcon className="w-8 h-8 group-hover:scale-110 transition-transform duration-200" style={{ color: '#061E3E' }} />
+              </Link>
+            )}
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
               <img
                 src={profile.photo || '/logo.png'}
                 alt={profile.name}
                 loading="eager"
-                width={128}
-                height={128}
-                className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+                className="w-50 h-50 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
               />
             </div>
           </div>
 
           {/* Name and Basic Info */}
-          <div className="pt-16 pb-6 px-8">
+          <div className="pt-30 pb-6 px-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{profile.name}</h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">
               {profile.profession} at {profile.companyName}

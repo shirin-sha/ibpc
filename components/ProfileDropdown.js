@@ -1,14 +1,13 @@
 'use client';
 import { useState, useRef, useEffect } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function ProfileDropdown() {
+export default function ProfileDropdown({ session }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const router = useRouter();
-  const { data: session } = useSession(); 
   const isAdmin = session?.user?.role === 'admin';
   
   useEffect(() => {
@@ -56,33 +55,33 @@ export default function ProfileDropdown() {
           
           <div className="py-1">
             {!isAdmin && (
-             <div> <Link href={`/dashboard/profile/${session?.user?.id}`}>
+             <div> <Link href={`/member/profile/${session?.user?.id}`}>
                 <span className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 cursor-pointer transition duration-150">
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span>View Profile</span>
+                  <span>VIEW PROFILE</span>
                 </span>
               </Link>
-              <Link href={`/dashboard/profile/edit/${session?.user?.id}`}>
+              <Link href={`/member/profile/edit/${session?.user?.id}`}>
                 <span className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 cursor-pointer transition duration-150">
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0l-1.414-1.414a2 2 0 010-2.828l8.586-8.586z" />
                     </svg>
-                  <span>Edit Profile</span>
+                  <span>EDIT PROFILE</span>
                 </span>
               </Link>
               </div>
             )}
             
             <button
-              onClick={() => router.push('/dashboard/change-password')}
+              onClick={() => router.push('/member/change-password')}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 cursor-pointer transition duration-150"
             >
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
-              <span>Change Password</span>
+              <span>CHANGE PASSWORD</span>
             </button>
             
             <div className="border-t border-gray-100 my-1"></div>
@@ -97,7 +96,7 @@ export default function ProfileDropdown() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#061E3E' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              <span>Logout</span>
+              <span>LOGOUT</span>
             </button>
           </div>
         </div>

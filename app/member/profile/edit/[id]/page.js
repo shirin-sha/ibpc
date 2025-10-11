@@ -63,8 +63,8 @@ export default function ProfilePage() {
     const isAdmin = session?.user?.role === 'admin';
 
     return (
-        <div className="max-w-4xl mx-auto my-8 bg-white shadow-lg rounded-xl p-8 border border-gray-200">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-6">Edit Profile</h1>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">EDIT PROFILE</h1>
             <ProfileForm user={user} isAdmin={isAdmin} onSaveSuccess={fetchUser} />
         </div>
     );

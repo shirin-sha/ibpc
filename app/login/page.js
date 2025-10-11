@@ -34,7 +34,7 @@ const handleSubmit = async (e) => {
 
     if (res.ok) {
       toast.success('Logged in');
-      router.push(email === 'admin@ibpc.com' ? '/dashboard/admin' : '/dashboard');
+      router.push(email === 'admin@ibpc.com' ? '/admin' : '/member');
     }
   } catch (error) {
     toast.error('An error occurred');

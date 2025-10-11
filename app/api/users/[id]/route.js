@@ -47,15 +47,18 @@ export async function GET(req, { params }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // ⚡ Next.js 15 requires params to be awaited
+  const { id } = await params;
+
   // const isAdmin = session.user.role === 'admin';
-  // const isSelf = session.user.id === params.id.toString();
+  // const isSelf = session.user.id === id.toString();
   // if (!isAdmin && !isSelf) {
   //   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   // }
 
   try {
     await connectDB();
-    const user = await User.findById(params.id).select('-password');
+    const user = await User.findById(id).select('-password');
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     // Generate presigned URLs for photo and logo if they exist
@@ -95,9 +98,12 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  // ⚡ Next.js 15 requires params to be awaited
+  const { id } = await params;
+
   // Check authorization (admin or self)
   const isAdmin = session.user.role === 'admin';
-  const isSelf = session.user.id === params.id.toString();
+  const isSelf = session.user.id === id.toString();
   if (!isAdmin && !isSelf) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -152,7 +158,7 @@ export async function PATCH(req, { params }) {
 
     // Update user
     const updatedUser = await User.findByIdAndUpdate(
-      params.id, 
+      id, 
       updateData, 
       { new: true, runValidators: true }
     );

@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import FormInput from '../components/FormInput';
 import Login from './login/page';
