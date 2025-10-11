@@ -313,7 +313,8 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
           <button
             type="submit"
             disabled={isSaving}
-            className="order-first sm:order-last w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
+            className="order-first sm:order-last w-full sm:w-auto px-4 py-2 text-white rounded-lg transition-colors text-sm disabled:opacity-50 hover:opacity-90"
+            style={{ backgroundColor: '#061E3E' }}
           >
             {isSaving ? 'Saving...' : 'Save Profile'}
           </button>

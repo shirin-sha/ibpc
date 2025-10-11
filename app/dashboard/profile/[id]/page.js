@@ -37,7 +37,7 @@ export default function ViewProfile() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
     </div>
   );
 
@@ -55,7 +55,7 @@ export default function ViewProfile() {
         {/* Profile Card */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
           {/* Header Section */}
-          <div className="relative h-48 bg-gradient-to-r from-gray-800 to-red-500">
+          <div className="relative h-48" style={{ background: '#061E3E' }}>
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
               <img
                 src={profile.photo || '/logo.png'}
@@ -89,14 +89,14 @@ export default function ViewProfile() {
             {/* About Section */}
             {profile.about && (
               <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-                <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">About</h2>
+                <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>About</h2>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{profile.about}</p>
               </div>
             )}
 
             {/* Personal Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Personal Information</h2>
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Personal Information</h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Member ID:</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{profile.memberId || 'N/A'}</dd>
@@ -126,7 +126,7 @@ export default function ViewProfile() {
 
             {/* Company Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Company Information</h2>
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Company Information</h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Name:</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
@@ -160,7 +160,7 @@ export default function ViewProfile() {
 
             {/* Identification Details Card - NEW */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>
                 Identification Details
               </h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
@@ -174,7 +174,7 @@ export default function ViewProfile() {
 
             {/* Contact Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Contact Details</h2>
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Contact Details</h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap flex items-center gap-2">
                   <EnvelopeIcon className="w-4 h-4 text-blue-500" />
@@ -216,7 +216,7 @@ export default function ViewProfile() {
 
             {/* Sponsorship Card - NEW */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>
                 Sponsorship
               </h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
@@ -237,7 +237,7 @@ export default function ViewProfile() {
 
             {/* Social Media Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600">Social Media</h2>
+              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Social Media</h2>
               <div className="flex space-x-6">
                 {profile.social?.linkedin && <a href={profile.social.linkedin} className="text-blue-600 hover:text-blue-800">LinkedIn</a>}
                 {profile.social?.instagram && <a href={profile.social.instagram} className="text-pink-600 hover:text-pink-800">Instagram</a>}

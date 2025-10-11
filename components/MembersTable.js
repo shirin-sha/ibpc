@@ -156,12 +156,6 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                       <SortIcon field="memberId" />
                     </div>
                   </th>
-                  <th onClick={() => handleSort('uniqueId')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                    <div className="flex items-center">
-                      <span>Unique ID</span>
-                      <SortIcon field="uniqueId" />
-                    </div>
-                  </th>
                   <th onClick={() => handleSort('phone')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                     <div className="flex items-center">
                       <span>Phone</span>
@@ -193,7 +187,6 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                 <>
                   {/* Member Columns */}
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Unique ID</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Designation</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Company</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Email</th>
@@ -207,9 +200,9 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan={isAdmin ? 8 : 7} className="px-6 py-12 text-center">
+                <td colSpan={isAdmin ? 8 : 6} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <svg className="animate-spin h-8 w-8 text-indigo-500 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-8 w-8 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style={{ color: '#061E3E' }}>
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
@@ -219,7 +212,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
               </tr>
             ) : sortedMembers.length === 0 ? (
               <tr>
-                <td colSpan={isAdmin ? 8 : 7} className="px-6 py-8 text-center">
+                <td colSpan={isAdmin ? 8 : 6} className="px-6 py-8 text-center">
                   <div className="text-gray-400 mb-2">
                     <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -266,7 +259,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.uniqueId}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.memberId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.mobile}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
@@ -357,7 +350,6 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.uniqueId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.profession}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>

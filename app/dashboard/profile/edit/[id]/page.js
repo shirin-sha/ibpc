@@ -54,7 +54,7 @@ export default function ProfilePage() {
 
     if (status === 'loading' || loading) return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
         </div>
     );
     if (error) return <div>Error: {error} (Check console for details or try refreshing)</div>;

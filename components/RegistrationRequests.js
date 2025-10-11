@@ -275,7 +275,8 @@ export default function RegistrationTable({ data, refreshData, loading }) {
                       <div className="group relative">
                         <button 
                           onClick={() => setSelectedRegistration(row)}
-                          className="inline-block p-2 text-blue-500 hover:text-blue-600 rounded-lg transition-colors"
+                          className="inline-block p-2 rounded-lg transition-colors hover:opacity-80"
+                          style={{ color: '#061E3E' }}
                           disabled={Boolean(rowLoading[row._id])}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +329,7 @@ export default function RegistrationTable({ data, refreshData, loading }) {
       {/* Modal Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-          <svg className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#061E3E' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
           Registration Details - {selectedRegistration.name}

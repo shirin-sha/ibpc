@@ -29,7 +29,7 @@ export default function Header() {
   );
 
   return (
-    <nav className="bg-gradient-to-br from-red-700 to-slate-900 text-white sticky top-0 z-50 shadow-md">
+    <nav className="text-white sticky top-0 z-50 shadow-md" style={{ background: '#061E3E' }}>
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
@@ -76,7 +76,7 @@ export default function Header() {
               aria-label="Notifications"
             >
               <BellIcon className="w-6 h-6" />
-              <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+              <span className="absolute top-0 right-0 h-2 w-2 rounded-full" style={{ backgroundColor: '#e74c3c' }}></span>
             </button>
             
             <ProfileDropdown />
@@ -98,7 +98,7 @@ export default function Header() {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-gradient-to-br from-red-700 to-slate-900 border-t border-red-800">
+          <div className="md:hidden border-t" style={{ background: '#061E3E', borderTopColor: '#0a2f5e' }}>
             <div className="px-2 pt-2 pb-3 space-y-1">
               {filteredLinks.map((link) => (
                 <Link

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 const RegistrationStepper = dynamic(() => import("@/components/RegistrationStepper"), {
   loading: () => (
     <div className="flex items-center justify-center py-20">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
     </div>
   ),
   ssr: false
@@ -17,7 +17,7 @@ export default function RegisterPage() {
 
   if (submitted)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #061E3E, #0a2f5e)' }}>
         <div className="w-full max-w-xl">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <h1 className="text-2xl font-bold mb-4">Thank you for registering!</h1>
@@ -30,7 +30,7 @@ export default function RegisterPage() {
     );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 to-slate-900 px-1">
+    <div className="min-h-screen flex items-center justify-center px-1" style={{ background: 'linear-gradient(to bottom right, #061E3E, #0a2f5e)' }}>
       <div className="w-full max-w-5xl">
         <div className="bg-white rounded-2xl shadow-xl py-3 px-2">
           <RegistrationStepper onComplete={() => setSubmitted(true)} />

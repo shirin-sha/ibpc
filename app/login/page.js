@@ -44,7 +44,7 @@ const handleSubmit = async (e) => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-700 to-slate-900">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, #061E3E, #0a2f5e)' }}>
       <div className="w-full max-w-md -mt-20"> {/* Added negative margin to adjust vertical position */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo and Header */}
@@ -68,8 +68,9 @@ const handleSubmit = async (e) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm
-                         focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                         focus:outline-none focus:ring-1 focus:border-gray-400
                          placeholder-gray-400"
+                style={{ focusRingColor: '#061E3E' }}
                 placeholder="Enter your email"
                 required
               />
@@ -86,7 +87,7 @@ const handleSubmit = async (e) => {
       value={password}
       onChange={(e) => setPassword(e.target.value)}
       className="w-full px-3.5 py-2.5 pr-10 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+               focus:outline-none focus:ring-1 focus:border-gray-400
                placeholder-gray-400"
       placeholder="Enter your password"
       required
@@ -110,9 +111,10 @@ const handleSubmit = async (e) => {
          <button
   type="submit"
   disabled={loading}
-  className={`cursor-pointer w-full bg-[#404040] text-white py-2.5 px-4 rounded-lg 
+  className={`cursor-pointer w-full text-white py-2.5 px-4 rounded-lg 
              transition-colors duration-200 font-medium mt-2 
-             ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#303030]'}`}
+             ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
+  style={{ backgroundColor: '#061E3E' }}
 >
   {loading ? 'Logging in...' : 'Log in'}
 </button>
@@ -122,7 +124,7 @@ const handleSubmit = async (e) => {
           {/* Registration Link */}
           <p className="text-center text-sm text-gray-600 mt-4">
             Don't have an account?{' '}
-            <Link href="/register" className="text-blue-500 hover:text-blue-700 font-medium">
+            <Link href="/register" className="font-medium hover:underline" style={{ color: '#061E3E' }}>
               Register
             </Link>
           </p>

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 const RegistrationTable = dynamic(() => import('@/components/RegistrationRequests'), {
   loading: () => (
     <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
       <span className="ml-3 text-gray-600">Loading registrations...</span>
     </div>
   ),
@@ -37,7 +37,7 @@ export default function Registrations() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
         <span className="ml-3 text-gray-600">Loading...</span>
       </div>
     }>

@@ -165,19 +165,19 @@ function RegistrationStepper({ onComplete }) {
               <div className="relative">
                 <input type="text" name="name" value={form.name} onChange={handleChange} id="name" className={`${inputClass} peer pt-6 placeholder-transparent`} placeholder="Full Name" required />
                 <label htmlFor="name" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                  Full Name <span className="text-red-500">*</span>
+                  Full Name <span style={{ color: '#061E3E' }}>*</span>
                 </label>
               </div>
               <div className="relative">
                 <input type="text" name="profession" value={form.profession} onChange={handleChange} id="profession" className={`${inputClass} peer pt-6 placeholder-transparent`} placeholder="Profession & Designation" required />
                 <label htmlFor="profession" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                  Profession & Designation <span className="text-red-500">*</span>
+                  Profession & Designation <span style={{ color: '#061E3E' }}>*</span>
                 </label>
               </div>
               <div className="relative">
                 <input type="text" name="companyName" value={form.companyName} onChange={handleChange} id="companyName" className={`${inputClass} peer pt-6 placeholder-transparent`} placeholder="Company Name" required />
                 <label htmlFor="companyName" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                  Company Name <span className="text-red-500">*</span>
+                  Company Name <span style={{ color: '#061E3E' }}>*</span>
                 </label>
               </div>
               <div className="relative">
@@ -234,7 +234,7 @@ function RegistrationStepper({ onComplete }) {
                   <option value="OTHERS">OTHERS</option>
                 </select>
                 <label htmlFor="nationality" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                  Nationality <span className="text-red-500">*</span>
+                  Nationality <span style={{ color: '#061E3E' }}>*</span>
                 </label>
               </div>
               <div className="relative">
@@ -246,7 +246,7 @@ function RegistrationStepper({ onComplete }) {
                   <option value="Honorary Member">Honorary Member</option>
                 </select>
                 <label htmlFor="membershipType" className="absolute left-3 top-2 text-xs text-gray-500 transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-gray-600 peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 bg-white px-1 pointer-events-none">
-                  Membership Type <span className="text-red-500">*</span>
+                  Membership Type <span style={{ color: '#061E3E' }}>*</span>
                 </label>
               </div>
               <div className="flex flex-col gap-2">
@@ -259,7 +259,7 @@ function RegistrationStepper({ onComplete }) {
                 {photoPreview ? (
                   <div className="flex items-center gap-3">
                     <img src={photoPreview} alt="Preview" className="w-20 h-20 object-cover rounded-md border" />
-                    <button type="button" onClick={removePhoto} className="text-xs text-red-600 hover:underline">
+                    <button type="button" onClick={removePhoto} className="text-xs hover:underline" style={{ color: '#061E3E' }}>
                       Remove
                     </button>
                   </div>
@@ -319,7 +319,7 @@ function RegistrationStepper({ onComplete }) {
               </div>
             </div>
             {form.email && !emailRegex.test(form.email) && (
-              <span className="text-xs text-red-600">Please enter a valid email address.</span>
+              <span className="text-xs" style={{ color: '#061E3E' }}>Please enter a valid email address.</span>
             )}
           </div>
         );
@@ -367,7 +367,7 @@ function RegistrationStepper({ onComplete }) {
                 </p>
               </div>
               <label className="flex items-center space-x-3">
-                <input type="checkbox" name="consent" checked={form.consent} onChange={handleChange} className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" required />
+                <input type="checkbox" name="consent" checked={form.consent} onChange={handleChange} className="h-4 w-4 border-gray-300 rounded" style={{ accentColor: '#061E3E' }} required />
                 <span className="text-sm text-gray-600">
                   I accept the terms and conditions and consent to the processing of my information according to IBPC's privacy policy.
                 </span>
@@ -392,7 +392,7 @@ function RegistrationStepper({ onComplete }) {
         {/* Desktop Stepper */}
         <div className="hidden md:block relative">
           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[calc(100%-100px)] h-0.5 bg-gray-200">
-            <div className="h-full bg-green-600 transition-all duration-300" style={{ width: `${(step / (steps.length - 1)) * 100}%` }} />
+            <div className="h-full transition-all duration-300" style={{ width: `${(step / (steps.length - 1)) * 100}%`, backgroundColor: '#061E3E' }} />
           </div>
           <div className="relative flex justify-between">
             {steps.map((item, idx) => {
@@ -401,7 +401,7 @@ function RegistrationStepper({ onComplete }) {
 
               return (
                 <div key={idx} className="flex flex-col items-center z-10">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isComplete ? "bg-green-500 text-white" : isActive ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-500"}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isComplete ? "text-white" : isActive ? "bg-gray-600 text-white" : "bg-gray-100 text-gray-500"}`} style={isComplete ? { backgroundColor: '#061E3E' } : {}}>
                     {isComplete ? (
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -442,7 +442,8 @@ function RegistrationStepper({ onComplete }) {
                 type="button"
                 onClick={nextStep}
                 disabled={!isStepValid()}
-                className={`w-full sm:w-auto px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full sm:w-auto px-4 py-2 text-white rounded-lg transition-colors text-sm ${!isStepValid() ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+                style={{ backgroundColor: '#061E3E' }}
               >
                 Continue
               </button>
@@ -450,7 +451,8 @@ function RegistrationStepper({ onComplete }) {
               <button
                 type="submit"
                 disabled={!isStepValid() || isSubmitting}
-                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
+                className="w-full sm:w-auto px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 text-sm hover:opacity-90"
+                style={{ backgroundColor: '#061E3E' }}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Application'}
               </button>
@@ -461,7 +463,7 @@ function RegistrationStepper({ onComplete }) {
       <div className="mt-6 text-center">
         <p className="text-sm md:text-base text-gray-700">
          Already a member?{" "}
-          <Link href="/login" className="text-blue-600 font-semibold hover:underline">
+          <Link href="/login" className="font-semibold hover:underline" style={{ color: '#061E3E' }}>
             Login
           </Link>
         </p>
