@@ -61,12 +61,8 @@ async function addSignedUrls(items) {
           Expires: expiresIn 
         });
       } catch (error) {
-        console.error(`Signed URL Error for photo (key: ${item.photo}):`, error);
-        if (error.code === 'NoSuchKey') {
-          item.photo = fallbackImage;
-        } else {
-          item.photo = fallbackImage;
-        }
+        console.error(`Signed URL Error for photo (key: ${item.photo}):`, error.message);
+        item.photo = fallbackImage;
       }
     }
   }
