@@ -27,6 +27,9 @@ async function addSignedUrls(users) {
               Expires: expiresIn 
             }).then(url => {
               user.photo = url;
+            }).catch(err => {
+              console.error(`Failed to sign URL for photo ${user.photo}:`, err.message);
+              user.photo = null; // Set to null instead of failing
             })
           );
         }
@@ -40,6 +43,9 @@ async function addSignedUrls(users) {
               Expires: expiresIn 
             }).then(url => {
               user.logo = url;
+            }).catch(err => {
+              console.error(`Failed to sign URL for logo ${user.logo}:`, err.message);
+              user.logo = null; // Set to null instead of failing
             })
           );
         }

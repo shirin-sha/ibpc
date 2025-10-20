@@ -5,9 +5,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
 import path from 'path';
-import s3 from '@/lib/b2Client';
-export const runtime = 'nodejs';
-export const preferredRegion = 'auto';
+import { putObject, getSignedObjectUrl } from '@/lib/b2Client';
 
 // app/api/users/[id]/route.js
 // ... (rest of your imports and code)
@@ -23,14 +21,12 @@ async function uploadToB2(file, prefix = 'photo') {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    await s3.putObject({
+    await putObject({
+      Bucket: bucketName,
       Key: key,
       Body: buffer,
-      Bucket: bucketName,
       ContentType: file.type,
-      // Optional: Set ACL if you ever make it public, but keep private for now
-      // ACL: 'public-read' // DO NOT USE if bucket should stay private
-    }).promise();
+    });
 
     return key; // Return just the key (not full URL)
   } catch (error) {
@@ -68,19 +64,29 @@ export async function GET(req, { params }) {
     const expiresIn = 3600; // 1 hour expiration
 
     if (user.photo) {
-      user.photo = s3.getSignedUrl('getObject', {
-        Bucket: bucketName,
-        Key: user.photo, // This is the stored key (e.g., 'uploads/photo-123.jpg')
-        Expires: expiresIn,
-      });
+      try {
+        user.photo = await getSignedObjectUrl({
+          Bucket: bucketName,
+          Key: user.photo, // This is the stored key (e.g., 'uploads/photo-123.jpg')
+          Expires: expiresIn,
+        });
+      } catch (error) {
+        console.error(`Failed to sign URL for photo ${user.photo}:`, error.message);
+        user.photo = null;
+      }
     }
 
     if (user.logo) {
-      user.logo = s3.getSignedUrl('getObject', {
-        Bucket: bucketName,
-        Key: user.logo, // Assuming you have a logo field
-        Expires: expiresIn,
-      });
+      try {
+        user.logo = await getSignedObjectUrl({
+          Bucket: bucketName,
+          Key: user.logo, // Assuming you have a logo field
+          Expires: expiresIn,
+        });
+      } catch (error) {
+        console.error(`Failed to sign URL for logo ${user.logo}:`, error.message);
+        user.logo = null;
+      }
     }
 
     return NextResponse.json(user);
