@@ -6,6 +6,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
 import path from 'path';
 import s3 from '@/lib/b2Client';
+export const runtime = 'nodejs';
+export const preferredRegion = 'auto';
 
 // app/api/users/[id]/route.js
 // ... (rest of your imports and code)

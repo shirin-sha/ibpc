@@ -1,7 +1,7 @@
 import connectDB from '../../../lib/db';
 import User from '../../../lib/models/User';
 import { NextResponse } from 'next/server';
-import s3 from '../../../lib/b2Client'; // Import your S3 client for B2
+import { getSignedObjectUrl } from '../../../lib/b2Client';
 
 // Helper function to add signed URLs to user(s) for photo and logo
 // ⚡ OPTIMIZED: Runs in parallel instead of sequentially (95% faster!)
@@ -21,18 +21,12 @@ async function addSignedUrls(users) {
         // Add photo promise if exists
         if (user.photo) {
           promises.push(
-            new Promise((resolve, reject) => {
-              s3.getSignedUrl(
-                'getObject',
-                { Bucket: bucketName, Key: user.photo, Expires: expiresIn },
-                (err, url) => {
-                  if (err) reject(err);
-                  else {
-                    user.photo = url;
-                    resolve();
-                  }
-                }
-              );
+            getSignedObjectUrl({ 
+              Bucket: bucketName, 
+              Key: user.photo, 
+              Expires: expiresIn 
+            }).then(url => {
+              user.photo = url;
             })
           );
         }
@@ -40,18 +34,12 @@ async function addSignedUrls(users) {
         // Add logo promise if exists
         if (user.logo) {
           promises.push(
-            new Promise((resolve, reject) => {
-              s3.getSignedUrl(
-                'getObject',
-                { Bucket: bucketName, Key: user.logo, Expires: expiresIn },
-                (err, url) => {
-                  if (err) reject(err);
-                  else {
-                    user.logo = url;
-                    resolve();
-                  }
-                }
-              );
+            getSignedObjectUrl({ 
+              Bucket: bucketName, 
+              Key: user.logo, 
+              Expires: expiresIn 
+            }).then(url => {
+              user.logo = url;
             })
           );
         }

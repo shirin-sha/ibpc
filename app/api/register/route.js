@@ -5,7 +5,7 @@ import Registration from '../../../lib/models/Registration';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import path from 'path';
-import s3 from '@/lib/b2Client';
+import { putObject, getSignedObjectUrl } from '@/lib/b2Client';
 
 // Updated sendMail function (unchanged)
 async function sendMail({ to, subject, text, html }) {
@@ -52,24 +52,14 @@ async function addSignedUrls(items) {
   const itemArray = Array.isArray(items) ? items : [items];
 
   for (let item of itemArray) {
-    // Helper to generate signed URL with error handling
-    const generateSignedUrl = (key) => {
-      return new Promise((resolve, reject) => {
-        s3.getSignedUrl(
-          'getObject',
-          { Bucket: bucketName, Key: key, Expires: expiresIn },
-          (err, url) => {
-            if (err) reject(err);
-            else resolve(url);
-          }
-        );
-      });
-    };
-
     // Handle photo (assuming 'photo' is the only image field; add more if needed)
     if (item.photo) {
       try {
-        item.photo = await generateSignedUrl(item.photo);
+        item.photo = await getSignedObjectUrl({ 
+          Bucket: bucketName, 
+          Key: item.photo, 
+          Expires: expiresIn 
+        });
       } catch (error) {
         console.error(`Signed URL Error for photo (key: ${item.photo}):`, error);
         if (error.code === 'NoSuchKey') {
@@ -96,12 +86,12 @@ async function uploadToB2(file) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   try {
-    await s3.putObject({
+    await putObject({
+      Bucket: bucketName,
       Key: key,
       Body: buffer,
-      Bucket: bucketName,
       ContentType: file.type // Add content type
-    }).promise();
+    });
 
     return key; // Return KEY (e.g., 'uploads/photo-123.jpg')
   } catch (error) {
