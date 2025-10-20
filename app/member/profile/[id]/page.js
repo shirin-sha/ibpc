@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, IdentificationIcon, UserGroupIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, PencilIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
@@ -90,7 +90,7 @@ export default function ViewProfile() {
                 Member ID: <span className="font-medium text-gray-700 dark:text-gray-300">{profile.memberId || 'N/A'}</span>
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Unique ID: <span className="font-medium text-gray-700 dark:text-gray-300">{profile.uniqueId || 'N/A'}</span>
+              Serial No.: <span className="font-medium text-gray-700 dark:text-gray-300">{profile.uniqueId || 'N/A'}</span>
               </p>
             </div>
           </div>
@@ -109,12 +109,10 @@ export default function ViewProfile() {
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
               <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Personal Information</h2>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Member ID:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.memberId || 'N/A'}</dd>
+               <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Full Name:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.name || 'N/A'}</dd>
                 
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Unique ID:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.uniqueId || 'N/A'}</dd>
-                
+              
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Profession:</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{profile.profession || 'N/A'}</dd>
                 
@@ -123,65 +121,79 @@ export default function ViewProfile() {
                 
                 <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Membership Type:</dt>
                 <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipType || 'N/A'}</dd>
+                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Membership Validity:</dt>
+                <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipValidity || "Not set"}</dd>
                 
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Passport Number:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Civil ID:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Sponsor Name:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.sponsorName || 'N/A'}</dd>
+                {isAdmin && (
+                  <>
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Passport Number:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Civil ID:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Sponsor Name:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.sponsorName || 'N/A'}</dd>
+                  </>
+                )}
               </dl>
             </div>
 
             {/* Company Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner">
               <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>Company Information</h2>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Name:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Section - Company Details */}
+                <div>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Name:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.companyName || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Business Activity:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.businessActivity || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap self-start">Company Brief:</dt>
+                    <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Address:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.companyAddress || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Website:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.companyWebsite || 'N/A'}</dd>
+                    
+                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Industry Sector:</dt>
+                    <dd className="font-medium text-gray-900 dark:text-white">{profile.industrySector || 'N/A'}</dd>
+                    
+                    {profile.alternateIndustrySector && (
+                      <>
+                        <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Alternate Sector:</dt>
+                        <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateIndustrySector}</dd>
+                      </>
+                    )}
+                    
+                 
+                  </dl>
+                </div>
                 
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Business Activity:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.businessActivity || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap self-start">Company Brief:</dt>
-                <dd className="text-gray-900 dark:text-white">{profile.companyBrief || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Address:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyAddress || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Company Website:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.companyWebsite || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Industry Sector:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.industrySector || 'N/A'}</dd>
-                
-                {profile.alternateIndustrySector && (
-                  <>
-                    <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Alternate Sector:</dt>
-                    <dd className="font-medium text-gray-900 dark:text-white">{profile.alternateIndustrySector}</dd>
-                  </>
-                )}
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Membership Validity:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.membershipValidity || "Not set"}</dd>
-              </dl>
+                {/* Right Section - Company Logo */}
+                <div className="flex flex-col items-center justify-center">
+                  {profile.logo && (
+                    <div className="text-center">
+                      <img
+                        src={profile.logo}
+                        alt={`${profile.companyName} Logo`}
+                        className="w-24 h-24 object-contain bg-white rounded-lg border border-gray-200 shadow-md mx-auto mb-3"
+                        loading="lazy"
+                      />
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Company Logo</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500">{profile.companyName}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Identification Details Card - NEW */}
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
-              <h2 className="text-xl font-bold mb-4 pb-2 border-b-2 border-gray-300 dark:border-gray-600" style={{ color: '#061E3E' }}>
-                Identification Details
-              </h2>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm items-baseline">
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Passport Number:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.passportNumber || 'N/A'}</dd>
-                
-                <dt className="text-gray-600 dark:text-gray-300 whitespace-nowrap">Civil ID:</dt>
-                <dd className="font-medium text-gray-900 dark:text-white">{profile.civilId || 'N/A'}</dd>
-              </dl>
-            </div>
 
             {/* Contact Info Card */}
             <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 shadow-inner md:col-span-2">
