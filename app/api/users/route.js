@@ -1,7 +1,7 @@
 import connectDB from '../../../lib/db';
 import User from '../../../lib/models/User';
 import { NextResponse } from 'next/server';
-import { getFileUrl } from '../../../lib/localStorage';
+const { getFileUrl } = require('../../../lib/localStorage');
 
 // Helper function to add local URLs to user(s) for photo and logo
 async function addLocalUrls(users) {

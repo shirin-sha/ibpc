@@ -5,7 +5,7 @@ import Registration from '../../../lib/models/Registration';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import path from 'path';
-import { uploadFile, getFileUrl } from '@/lib/localStorage';
+const { uploadFile, getFileUrl } = require('@/lib/localStorage');
 
 // Updated sendMail function (unchanged)
 async function sendMail({ to, subject, text, html }) {
