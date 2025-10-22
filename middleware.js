@@ -43,6 +43,7 @@ export async function middleware(req) {
     url.startsWith('/_next') ||
     url.startsWith('/favicon.ico') ||
     url.startsWith('/api/auth') ||
+    url.startsWith('/api/files') || // Skip file serving API
     url.includes('.') // Static files
   ) {
     return NextResponse.next();
@@ -133,5 +134,6 @@ export const config = {
     '/api/registrations/:path*', // Protect registration APIs
     '/login',                  // Handle login redirects
     '/register',               // Handle register redirects
+    '/((?!api/files|_next/static|_next/image|favicon.ico).*)', // Exclude file serving and static assets
   ],
 };

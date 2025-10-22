@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
 import path from 'path';
-const { uploadFile, getFileUrl } = require('@/lib/localStorage');
+import { uploadFile, getFileUrl } from '../../../../lib/localStorage.js';
 
 // app/api/users/[id]/route.js
 // ... (rest of your imports and code)

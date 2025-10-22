@@ -26,6 +26,17 @@ const nextConfig = {
   // Redirects for old dashboard routes to new structure
   async redirects() {
     return [
+      // Backward-compat for old image paths that had an extra /uploads segment
+      {
+        source: '/profileimages/uploads/:file*',
+        destination: '/profileimages/:file*',
+        permanent: true,
+      },
+      {
+        source: '/companylogos/uploads/:file*',
+        destination: '/companylogos/:file*',
+        permanent: true,
+      },
       {
         source: '/dashboard',
         destination: '/member',
