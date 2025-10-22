@@ -1,62 +1,25 @@
 import connectDB from '../../../lib/db';
 import User from '../../../lib/models/User';
 import { NextResponse } from 'next/server';
-import { getSignedObjectUrl } from '../../../lib/b2Client';
+import { getFileUrl } from '../../../lib/localStorage';
 
-// Helper function to add signed URLs to user(s) for photo and logo
-// ⚡ OPTIMIZED: Runs in parallel instead of sequentially (95% faster!)
-async function addSignedUrls(users) {
-  const bucketName = process.env.B2_BUCKET_NAME;
-  const expiresIn = 3600; // 1 hour expiration (adjust as needed)
-
+// Helper function to add local URLs to user(s) for photo and logo
+async function addLocalUrls(users) {
   // Handle single user or array
   const userArray = Array.isArray(users) ? users : [users];
 
-  // ⚡ Generate all signed URLs in parallel
-  await Promise.all(
-    userArray.map(async (user) => {
-      try {
-        const promises = [];
-        
-        // Add photo promise if exists
-        if (user.photo) {
-          promises.push(
-            getSignedObjectUrl({ 
-              Bucket: bucketName, 
-              Key: user.photo, 
-              Expires: expiresIn 
-            }).then(url => {
-              user.photo = url;
-            }).catch(err => {
-              console.error(`Failed to sign URL for photo ${user.photo}:`, err.message);
-              user.photo = null; // Set to null instead of failing
-            })
-          );
-        }
+  // Process all users
+  userArray.forEach((user) => {
+    // Add photo URL if exists
+    if (user.photo) {
+      user.photo = getFileUrl(user.photo);
+    }
 
-        // Add logo promise if exists
-        if (user.logo) {
-          promises.push(
-            getSignedObjectUrl({ 
-              Bucket: bucketName, 
-              Key: user.logo, 
-              Expires: expiresIn 
-            }).then(url => {
-              user.logo = url;
-            }).catch(err => {
-              console.error(`Failed to sign URL for logo ${user.logo}:`, err.message);
-              user.logo = null; // Set to null instead of failing
-            })
-          );
-        }
-
-        // Wait for both to complete
-        await Promise.all(promises);
-      } catch (error) {
-        console.error('Signed URL Error:', error);
-      }
-    })
-  );
+    // Add logo URL if exists
+    if (user.logo) {
+      user.logo = getFileUrl(user.logo);
+    }
+  });
 
   // If single user, return the object; else return array
   return Array.isArray(users) ? userArray : userArray[0];
@@ -97,7 +60,7 @@ export async function GET(req) {
       User.countDocuments(filter),
     ]);
 
-    let users = await addSignedUrls(usersRaw);
+    let users = await addLocalUrls(usersRaw);
 
     const res = NextResponse.json({
       data: users,
@@ -121,8 +84,8 @@ export async function POST(req) {
     const { id } = await req.json();
     let user = await User.findById(id).select('-password');
     if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    // Add signed URLs
-    user = await addSignedUrls(user);
+    // Add local URLs
+    user = await addLocalUrls(user);
     return NextResponse.json(user);
   } catch (error) {
     console.error('POST Error:', error);
@@ -151,8 +114,8 @@ export async function PATCH(req) {
     let updated = await User.findByIdAndUpdate(id, updateObj, { new: true }).select('-password');
     if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-    // Add signed URLs to the response
-    updated = await addSignedUrls(updated);
+    // Add local URLs to the response
+    updated = await addLocalUrls(updated);
 
     return NextResponse.json(updated);
   } catch (error) {

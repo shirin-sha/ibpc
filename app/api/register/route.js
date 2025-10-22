@@ -5,7 +5,7 @@ import Registration from '../../../lib/models/Registration';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import path from 'path';
-import { putObject, getSignedObjectUrl } from '@/lib/b2Client';
+import { uploadFile, getFileUrl } from '@/lib/localStorage';
 
 // Updated sendMail function (unchanged)
 async function sendMail({ to, subject, text, html }) {
@@ -41,29 +41,17 @@ async function sendMail({ to, subject, text, html }) {
   }
 }
 
-// Helper function to add signed URLs to registration(s) for photo
-// (Adapted from addSignedUrls in app/api/users/route.js; handles registrations)
-async function addSignedUrls(items) {
-  const bucketName = process.env.B2_BUCKET_NAME;
-  const expiresIn = 3600; // 1 hour expiration (adjust as needed)
+// Helper function to add local URLs to registration(s) for photo
+async function addLocalUrls(items) {
   const fallbackImage = null; // Or set to '/default-avatar.png' for a local fallback
 
   // Handle single item or array
   const itemArray = Array.isArray(items) ? items : [items];
 
   for (let item of itemArray) {
-    // Handle photo (assuming 'photo' is the only image field; add more if needed)
+    // Handle photo
     if (item.photo) {
-      try {
-        item.photo = await getSignedObjectUrl({ 
-          Bucket: bucketName, 
-          Key: item.photo, 
-          Expires: expiresIn 
-        });
-      } catch (error) {
-        console.error(`Signed URL Error for photo (key: ${item.photo}):`, error.message);
-        item.photo = fallbackImage;
-      }
+      item.photo = getFileUrl(item.photo);
     }
   }
 
@@ -71,28 +59,14 @@ async function addSignedUrls(items) {
   return Array.isArray(items) ? itemArray : itemArray[0];
 }
 
-// Updated uploadToB2 function: Returns KEY instead of full URL
-async function uploadToB2(file) {
-  const bucketName = process.env.B2_BUCKET_NAME;
-  if (!bucketName) throw new Error('B2_BUCKET_NAME is not configured');
-
-  const ext = path.extname(file.name).toLowerCase() || '.jpg';
-  const filename = `photo-${Date.now()}-${Math.random().toString(36).substring(2)}${ext}`;
-  const key = `uploads/${filename}`; // Return this key
-  const buffer = Buffer.from(await file.arrayBuffer());
-
+// Updated uploadToLocal function: Returns URL path
+async function uploadToLocal(file) {
   try {
-    await putObject({
-      Bucket: bucketName,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type // Add content type
-    });
-
-    return key; // Return KEY (e.g., 'uploads/photo-123.jpg')
+    const fileUrl = await uploadFile(file, 'profileimages');
+    return fileUrl; // Return the public URL path
   } catch (error) {
-    console.error('B2 Upload Error:', error);
-    throw new Error(`B2 Upload failed: ${error.message}`);
+    console.error('Local Upload Error:', error);
+    throw new Error(`Local Upload failed: ${error.message}`);
   }
 }
 
@@ -145,14 +119,14 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Email already registered' }, { status: 409 });
     }
 
-    let photoKey = ''; // Changed to photoKey for clarity
+    let photoUrl = ''; // Changed to photoUrl for clarity
     if (photo && photo.size > 0) {
-      photoKey = await uploadToB2(photo); // Get KEY from B2 upload
+      photoUrl = await uploadToLocal(photo); // Get URL from local upload
     }
 
     const registration = new Registration({ 
       ...data, 
-      photo: photoKey, // Store KEY
+      photo: photoUrl, // Store URL
       benefitFromIbpc: data.benefit,
       contributeToIbpc: data.contribution,
       alternateMobile: data.alternateMobile,
@@ -250,7 +224,7 @@ export async function POST(request) {
 
     return NextResponse.json({ 
       message: 'Registration saved successfully',
-      photoKey // Return key for reference (optional)
+      photoUrl // Return URL for reference (optional)
     }, { status: 201 });
     
   } catch (error) {
@@ -266,8 +240,8 @@ export async function GET() {
   try {
     await connectDB();
     let registrations = await Registration.find({}).sort({ createdAt: -1 }).lean();
-    // Add signed URLs
-    registrations = await addSignedUrls(registrations);
+    // Add local URLs
+    registrations = await addLocalUrls(registrations);
     const res = NextResponse.json(registrations);
     res.headers.set('Cache-Control', 'no-store, must-revalidate');
     return res;

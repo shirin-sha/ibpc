@@ -5,33 +5,21 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../lib/auth';
 import path from 'path';
-import { putObject, getSignedObjectUrl } from '@/lib/b2Client';
+import { uploadFile, getFileUrl } from '@/lib/localStorage';
 
 // app/api/users/[id]/route.js
 // ... (rest of your imports and code)
 
-// Updated uploadToB2 function
-async function uploadToB2(file, prefix = 'photo') {
-  const bucketName = process.env.B2_BUCKET_NAME;
-  if (!bucketName) throw new Error('B2_BUCKET_NAME is not configured');
-
-  const ext = path.extname(file.name).toLowerCase() || '.jpg';
-  const filename = `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2)}${ext}`;
-  const key = `uploads/${filename}`; // This is the key we'll store
-  const buffer = Buffer.from(await file.arrayBuffer());
-
+// Updated uploadToLocal function
+async function uploadToLocal(file, prefix = 'photo') {
+  const folder = prefix === 'logo' ? 'companylogos' : 'profileimages';
+  
   try {
-    await putObject({
-      Bucket: bucketName,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-    });
-
-    return key; // Return just the key (not full URL)
+    const fileUrl = await uploadFile(file, folder);
+    return fileUrl; // Return the public URL path
   } catch (error) {
-    console.error('B2 Upload Error:', error);
-    throw new Error(`B2 Upload failed: ${error.message}`);
+    console.error('Local Upload Error:', error);
+    throw new Error(`Local Upload failed: ${error.message}`);
   }
 }
 
@@ -59,34 +47,13 @@ export async function GET(req, { params }) {
     const user = await User.findById(id).select('-password');
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    // Generate presigned URLs for photo and logo if they exist
-    const bucketName = process.env.B2_BUCKET_NAME;
-    const expiresIn = 3600; // 1 hour expiration
-
+    // Generate local URLs for photo and logo if they exist
     if (user.photo) {
-      try {
-        user.photo = await getSignedObjectUrl({
-          Bucket: bucketName,
-          Key: user.photo, // This is the stored key (e.g., 'uploads/photo-123.jpg')
-          Expires: expiresIn,
-        });
-      } catch (error) {
-        console.error(`Failed to sign URL for photo ${user.photo}:`, error.message);
-        user.photo = null;
-      }
+      user.photo = getFileUrl(user.photo);
     }
 
     if (user.logo) {
-      try {
-        user.logo = await getSignedObjectUrl({
-          Bucket: bucketName,
-          Key: user.logo, // Assuming you have a logo field
-          Expires: expiresIn,
-        });
-      } catch (error) {
-        console.error(`Failed to sign URL for logo ${user.logo}:`, error.message);
-        user.logo = null;
-      }
+      user.logo = getFileUrl(user.logo);
     }
 
     return NextResponse.json(user);
@@ -134,10 +101,10 @@ export async function PATCH(req, { params }) {
         const socialKey = key.split('.')[1];
         socialLinks[socialKey] = value;
       } else if (key === 'photo' || key === 'logo') {
-        // Handle file uploads with B2
+        // Handle file uploads with local storage
         if (value && value instanceof File && value.size > 0) {
           try {
-            const fileUrl = await uploadToB2(value, key);
+            const fileUrl = await uploadToLocal(value, key);
             updateData[key] = fileUrl;
           } catch (error) {
             console.error(`Error uploading ${key}:`, error);
