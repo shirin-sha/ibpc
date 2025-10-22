@@ -102,7 +102,7 @@ export async function PATCH(req, { params }) {
         socialLinks[socialKey] = value;
       } else if (key === 'photo' || key === 'logo') {
         // Handle file uploads with local storage
-        if (value && value instanceof File && value.size > 0) {
+        if (value && typeof value === 'object' && 'size' in value && 'type' in value && value.size > 0) {
           try {
             const fileUrl = await uploadToLocal(value, key);
             updateData[key] = fileUrl;
