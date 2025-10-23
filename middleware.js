@@ -56,8 +56,9 @@ class SessionCache {
   }
 }
 
-// Create cache instance with shorter TTL for better logout responsiveness
-const sessionCache = new SessionCache(1000, 1 * 60 * 1000); // 1000 entries, 1 min TTL
+// Create cache instance with environment-specific TTL for better logout responsiveness
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionCache = new SessionCache(1000, isProduction ? 30 * 1000 : 1 * 60 * 1000); // 30s for prod, 1min for dev
 
 // Performance monitoring (development only)
 const performanceMetrics = process.env.NODE_ENV === 'development' ? {
@@ -109,11 +110,10 @@ export async function middleware(req) {
     // Check if this is a logout request (no session token cookie)
     const sessionToken = req.cookies.get('next-auth.session-token')?.value;
     
-    // If no session token, clear any cached session for this request
+    // If no session token, clear ALL cached sessions for better logout handling
     if (!sessionToken) {
-      const authHeader = req.headers.get('authorization');
-      const cacheKey = authHeader ? authHeader.slice(0, 50) : 'no-session';
-      sessionCache.invalidate(cacheKey);
+      // Clear all cached sessions to ensure proper logout in production
+      sessionCache.invalidateAll();
     }
     
     // Create efficient cache key from session token only

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "./ProfileDropdown";
 import { BellIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -23,7 +24,7 @@ export default function Header({ session }) {
     navigationLinks.filter(link => {
       if (!link.role) return true;
       return link.role === 'admin' && isAdmin;
-    }), [navigationLinks, isAdmin]
+    }), [isAdmin] // Removed navigationLinks dependency since it already depends on isAdmin
   );
 
   return (
@@ -32,14 +33,15 @@ export default function Header({ session }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
-            <Link href={isAdmin ? "/admin" : "/member"} className="flex items-center space-x-3" onClick={()=>{console.log(isAdmin)}}>
+            <Link href={isAdmin ? "/admin" : "/member"} className="flex items-center space-x-3">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gray-50">
-                <img 
+                <Image 
                   src="/logo.png" 
                   alt="IBPC Logo" 
+                  width={48}
+                  height={48}
                   className="w-12 h-12"
-                  loading="eager"
-                  priority="high"
+                  priority
                 />
               </div>
               <span className="text-xl font-semibold text-white hidden sm:block">
@@ -54,7 +56,7 @@ export default function Header({ session }) {
               <Link
                 key={link.href}
                 href={link.href}
-                prefetch={true}
+                prefetch={pathname !== link.href}
                 scroll={false}
                 className={`px-3 py-2 text-sm font-medium transition-colors
                   ${pathname === link.href 
