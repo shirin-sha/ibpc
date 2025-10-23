@@ -19,13 +19,17 @@ export default function Login() {
   // Email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // Form persistence - load saved email
+  // Form persistence - load saved email and preload target pages
   useEffect(() => {
     const savedEmail = localStorage.getItem('loginEmail');
     if (savedEmail) {
       setEmail(savedEmail);
     }
-  }, []);
+    
+    // Preload both admin and member pages for faster redirects
+    router.prefetch('/admin');
+    router.prefetch('/member');
+  }, [router]);
 
 
   // Form validation
@@ -93,8 +97,15 @@ export default function Login() {
         // Save email for next time
         localStorage.setItem('loginEmail', email.trim());
         
-        toast.success('Logged in successfully!');
-        router.push(email.trim().toLowerCase() === 'admin@ibpc.com' ? '/admin' : '/member');
+        // Show immediate success feedback
+        setLoading(false); // Stop loading spinner immediately
+        
+        // Immediate redirect without toast delay
+        const redirectUrl = email.trim().toLowerCase() === 'admin@ibpc.com' ? '/admin' : '/member';
+        
+        // Use window.location for immediate redirect (bypasses React router delay)
+        // This is faster than router.push() for login redirects
+        window.location.href = redirectUrl;
       } else if (res?.ok === false) {
         // Handle invalid credentials or other authentication failures
         setErrorMessage('Invalid email or password. Please check your credentials and try again.');

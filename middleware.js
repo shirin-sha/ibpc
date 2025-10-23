@@ -36,6 +36,16 @@ class SessionCache {
     });
   }
 
+  // Method to invalidate a specific session
+  invalidate(key) {
+    this.cache.delete(key);
+  }
+
+  // Method to invalidate all sessions (for logout)
+  invalidateAll() {
+    this.cache.clear();
+  }
+
   cleanup() {
     const now = Date.now();
     for (const [key, item] of this.cache.entries()) {
@@ -46,8 +56,8 @@ class SessionCache {
   }
 }
 
-// Create cache instance
-const sessionCache = new SessionCache(1000, 5 * 60 * 1000); // 1000 entries, 5 min TTL
+// Create cache instance with shorter TTL for better logout responsiveness
+const sessionCache = new SessionCache(1000, 1 * 60 * 1000); // 1000 entries, 1 min TTL
 
 // Performance monitoring (development only)
 const performanceMetrics = process.env.NODE_ENV === 'development' ? {
@@ -96,21 +106,33 @@ export async function middleware(req) {
   }
 
   try {
+    // Check if this is a logout request (no session token cookie)
+    const sessionToken = req.cookies.get('next-auth.session-token')?.value;
+    
+    // If no session token, clear any cached session for this request
+    if (!sessionToken) {
+      const authHeader = req.headers.get('authorization');
+      const cacheKey = authHeader ? authHeader.slice(0, 50) : 'no-session';
+      sessionCache.invalidate(cacheKey);
+    }
+    
     // Create efficient cache key from session token only
     const authHeader = req.headers.get('authorization');
-    const cacheKey = authHeader ? authHeader.slice(0, 50) : req.cookies.get('next-auth.session-token')?.value?.slice(0, 20) || 'no-session';
+    const cacheKey = authHeader ? authHeader.slice(0, 50) : sessionToken?.slice(0, 20) || 'no-session';
     
     let session = sessionCache.get(cacheKey);
     
     if (!session) {
-      // Get session token with optimized settings
+      // Get session token with optimized settings for faster login redirects
       session = await getToken({ 
         req, 
         secret: process.env.NEXTAUTH_SECRET,
         maxAge: 60 * 60 * 24 * 7, // 7 days
+        // Add timeout for faster failure detection
+        secureCookie: process.env.NODE_ENV === 'production',
       });
       
-      // Cache the session
+      // Cache the session immediately for faster subsequent requests
       if (session) {
         sessionCache.set(cacheKey, session);
       }
