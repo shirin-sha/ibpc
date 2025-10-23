@@ -367,7 +367,7 @@ export async function PUT(req) {
     await sendMail({
       to: reg.email,
       subject: 'Your New IBPC Kuwait MMS Login Credentials',
-      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Member ID: ${memberId}\n• Unique ID: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://ibpckuwait.vercel.app\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
+      text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Member ID: ${memberId}\n• Serial No: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://mms.ibpckuwait.org\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
       html: `<!doctype html>
 <html>
   <head>
@@ -412,14 +412,14 @@ export async function PUT(req) {
             <li><strong>Unique ID:</strong> <span class="kbd">${uniqueId}</span></li>
             <li><strong>Username:</strong> <span class="kbd">${username}</span></li>
             <li><strong>Password:</strong> <span class="kbd">${rawPassword}</span></li>
-            <li><strong>Login Portal:</strong> <a href="https://ibpckuwait.vercel.app" target="_blank" rel="noopener">https://ibpckuwait.vercel.app</a></li>
+            <li><strong>Login Portal:</strong> <a href="https://mms.ibpckuwait.org" target="_blank" rel="noopener">https://mms.ibpckuwait.org</a></li>
           </ul>
           <p>
             👉 For security reasons, we strongly recommend that you log in at your earliest convenience
             and <b>reset your password.</b>
           </p>
           <div style="margin: 16px 0;">
-            <a href="https://ibpckuwait.vercel.app" target="_blank" rel="noopener" class="cta">Go to Login Portal</a>
+            <a href="https://mms.ibpckuwait.org" target="_blank" rel="noopener" class="cta">Go to Login Portal</a>
           </div>
           <div class="section-title">With the new MMS, you can now:</div>
           <ul class="list">
