@@ -1,8 +1,8 @@
 'use client';
 import { useState, useRef, useEffect } from "react";
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { handleLogout } from "@/lib/auth-utils";
 
 export default function ProfileDropdown({ session }) {
   const [open, setOpen] = useState(false);
@@ -20,9 +20,9 @@ export default function ProfileDropdown({ session }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    // Fast logout - let NextAuth handle the redirect automatically
-    signOut({ callbackUrl: "/login", redirect: true });
+  const handleLogoutClick = () => {
+    // Use the utility function for proper URL handling
+    handleLogout({ callbackUrl: '/login', redirect: true });
   };
 
   return (
@@ -87,7 +87,7 @@ export default function ProfileDropdown({ session }) {
             <div className="border-t border-gray-100 my-1"></div>
             
             <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="w-full flex items-center gap-3 px-4 py-2.5 cursor-pointer transition duration-150"
               style={{ color: '#061E3E' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f9ff'}

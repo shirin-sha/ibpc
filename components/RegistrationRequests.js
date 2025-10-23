@@ -1,29 +1,61 @@
-import { useState } from 'react';
-import { useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 
-export default function RegistrationTable({ data, refreshData, loading }) {
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+export default function RegistrationTable({ 
+  data, 
+  refreshData, 
+  loading, 
+  pagination, 
+  filters, 
+  onFilterChange, 
+  onPageChange 
+}) {
   const [selectedRegistration, setSelectedRegistration] = useState(null);
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === 'admin';
   const [validityEdit, setValidityEdit] = useState("");
   const [rowLoading, setRowLoading] = useState({}); // id -> 'approve' | 'reject'
+  
+  // Debounced search to avoid too many API calls
+  const [searchQuery, setSearchQuery] = useState(filters?.search || '');
+  const [debouncedSearch, setDebouncedSearch] = useState(filters?.search || '');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+  
+  useEffect(() => {
+    if (debouncedSearch !== filters?.search) {
+      onFilterChange({ search: debouncedSearch });
+    }
+  }, [debouncedSearch, filters?.search, onFilterChange]);
 
   const handleApprove = async (id) => {
     try {
       setRowLoading((s) => ({ ...s, [id]: 'approve' }));
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const response = await fetch('/api/register', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (response.ok) {
-        alert('Registration approved successfully! Credentials sent to the user.');
+        const result = await response.json();
+        alert(`Registration approved successfully! ${result.message}`);
         refreshData();
         setSelectedRegistration(null); // Close modal after action
       } else {
@@ -32,7 +64,11 @@ export default function RegistrationTable({ data, refreshData, loading }) {
       }
     } catch (error) {
       console.error('Approval error:', error);
-      alert('Failed to approve registration. Please try again.');
+      if (error.name === 'AbortError') {
+        alert('Approval request timed out. The registration may have been approved - please refresh the page to check.');
+      } else {
+        alert('Failed to approve registration. Please try again.');
+      }
     } finally {
       setRowLoading((s) => ({ ...s, [id]: undefined }));
     }
@@ -41,13 +77,21 @@ export default function RegistrationTable({ data, refreshData, loading }) {
   const handleReject = async (id) => {
     try {
       setRowLoading((s) => ({ ...s, [id]: 'reject' }));
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const response = await fetch('/api/register', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id, status: 'rejected' }), // Assuming API supports status update
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         alert('Registration rejected successfully!');
@@ -59,30 +103,17 @@ export default function RegistrationTable({ data, refreshData, loading }) {
       }
     } catch (error) {
       console.error('Rejection error:', error);
-      alert('Failed to reject registration. Please try again.');
+      if (error.name === 'AbortError') {
+        alert('Rejection request timed out. Please refresh the page to check the status.');
+      } else {
+        alert('Failed to reject registration. Please try again.');
+      }
     } finally {
       setRowLoading((s) => ({ ...s, [id]: undefined }));
     }
   };
 
-  // Filter data based on status and search query
-  const filteredData = useMemo(() => {
-    return data.filter((row) => {
-      if (filterStatus !== 'all' && row.status !== filterStatus) {
-        return false;
-      }
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
-          row.name?.toLowerCase().includes(query) ||
-          row.email?.toLowerCase().includes(query) ||
-          row.companyName?.toLowerCase().includes(query) ||
-          row.civilId?.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    });
-  }, [data, filterStatus, searchQuery]);
+  // Data is already filtered server-side, no need for client-side filtering
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -90,7 +121,7 @@ export default function RegistrationTable({ data, refreshData, loading }) {
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Registration Requests ({filteredData.length})
+            Registration Requests ({pagination?.totalCount || data.length})
           </h2>
           <div className="flex items-center space-x-4">
             {/* Search Input */}
@@ -116,8 +147,8 @@ export default function RegistrationTable({ data, refreshData, loading }) {
             <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
               <span>Status:</span>
               <select 
-                value={filterStatus} 
-                onChange={(e) => setFilterStatus(e.target.value)}
+                value={filters?.status || 'all'} 
+                onChange={(e) => onFilterChange({ status: e.target.value })}
                 className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400"
               >
                 <option value="all">All Requests</option>
@@ -171,7 +202,7 @@ export default function RegistrationTable({ data, refreshData, loading }) {
                 </td>
               </tr>
             ) :
-            filteredData.length === 0 ? (
+            data.length === 0 ? (
               <tr>
                 <td colSpan="7" className="px-6 py-8 text-center">
                   <div className="text-gray-400 mb-2">
@@ -185,7 +216,7 @@ export default function RegistrationTable({ data, refreshData, loading }) {
                 </td>
               </tr>
             ) : (
-              filteredData.map((row, i) => (
+              data.map((row, i) => (
                 <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -195,6 +226,7 @@ export default function RegistrationTable({ data, refreshData, loading }) {
                             src={row.photo}
                             alt={`${row.name}'s photo`}
                             className="h-10 w-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                            loading="lazy"
                             onError={(e) => {
                               e.target.style.display = 'none';
                               e.target.nextSibling.style.display = 'flex';
@@ -321,6 +353,36 @@ export default function RegistrationTable({ data, refreshData, loading }) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              Showing {((pagination.currentPage - 1) * 20) + 1} to {Math.min(pagination.currentPage * 20, pagination.totalCount)} of {pagination.totalCount} results
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => onPageChange(pagination.currentPage - 1)}
+                disabled={!pagination.hasPrev}
+                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+                Page {pagination.currentPage} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => onPageChange(pagination.currentPage + 1)}
+                disabled={!pagination.hasNext}
+                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Details Modal */}
 {selectedRegistration && (

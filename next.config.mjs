@@ -3,6 +3,10 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['@heroicons/react'],
+    // Enable modern bundling
+    esmExternals: true,
+    // Optimize CSS
+    optimizeCss: true,
   },
   
   // Image optimization
@@ -22,6 +26,31 @@ const nextConfig = {
   
   // React strict mode (development only)
   reactStrictMode: process.env.NODE_ENV === 'development',
+  
+  // Webpack optimizations
+  webpack: (config, { dev, isServer }) => {
+    // Optimize bundle splitting
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            enforce: true,
+          },
+        },
+      };
+    }
+    
+    return config;
+  },
   
   // Redirects for old dashboard routes to new structure
   async redirects() {

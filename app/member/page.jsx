@@ -29,6 +29,15 @@ const MemberDashboard = () => {
                   href={`/member/profile/${session?.user?.id || ''}`}
                   className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                   aria-label="View Profile"
+                  prefetch={true}
+                  onMouseEnter={() => {
+                    // Preload profile data on hover
+                    if (session?.user?.id) {
+                      fetch(`/api/users/${session.user.id}`, {
+                        cache: 'force-cache'
+                      }).catch(() => {}); // Silent fail for preloading
+                    }
+                  }}
                 >
                   View Profile
                 </Link>

@@ -16,18 +16,54 @@ const RegistrationTable = dynamic(() => import('@/components/RegistrationRequest
 export default function Registrations() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    hasNext: false,
+    hasPrev: false
+  });
+  const [filters, setFilters] = useState({
+    status: 'all',
+    search: '',
+    page: 1,
+    limit: 20
+  });
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = async (newFilters = filters) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/register');
+      const params = new URLSearchParams();
+      params.append('page', newFilters.page);
+      params.append('limit', newFilters.limit);
+      if (newFilters.status !== 'all') params.append('status', newFilters.status);
+      if (newFilters.search) params.append('search', newFilters.search);
+      
+      const res = await fetch(`/api/register?${params.toString()}`, {
+        cache: 'force-cache', // Use cached data
+        next: { revalidate: 60 } // Revalidate every minute
+      });
       const data = await res.json();
-      setRegistrations(data);
+      
+      setRegistrations(data.registrations);
+      setPagination(data.pagination);
     } catch (error) {
       console.error('Error fetching registrations:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (newFilters) => {
+    const updatedFilters = { ...filters, ...newFilters, page: 1 }; // Reset to page 1
+    setFilters(updatedFilters);
+    fetchRegistrations(updatedFilters);
+  };
+
+  const handlePageChange = (page) => {
+    const updatedFilters = { ...filters, page };
+    setFilters(updatedFilters);
+    fetchRegistrations(updatedFilters);
   };
 
   useEffect(() => {
@@ -43,8 +79,12 @@ export default function Registrations() {
     }>
       <RegistrationTable
         data={registrations}
-        refreshData={fetchRegistrations}
+        refreshData={() => fetchRegistrations(filters)}
         loading={loading}
+        pagination={pagination}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onPageChange={handlePageChange}
       />
     </Suspense>
   );

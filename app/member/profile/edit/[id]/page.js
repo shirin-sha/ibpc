@@ -22,7 +22,8 @@ export default function ProfilePage() {
         setError(null);
 
         fetch(`/api/users/${id}`, {
-            cache: 'no-store' // Always fetch fresh data
+            cache: 'force-cache', // Use cached data for faster loading
+            next: { revalidate: 60 } // Revalidate every minute for edit page
         })
             .then(res => {
                 if (!res.ok) {

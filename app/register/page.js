@@ -1,19 +1,63 @@
 'use client';
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import dynamic from 'next/dynamic';
 
-// Lazy load the heavy RegistrationStepper component
+// Preload critical components
+const preloadComponents = () => {
+  if (typeof window !== 'undefined') {
+    import('@/components/FormComponents');
+    import('@/components/IndustrySectorSelect');
+  }
+};
+
+// Optimized lazy loading with better loading state and preloading
 const RegistrationStepper = dynamic(() => import("@/components/RegistrationStepper"), {
-  loading: () => (
-    <div className="flex items-center justify-center py-20">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderBottomColor: '#061E3E' }}></div>
-    </div>
-  ),
+  loading: () => <RegistrationFormSkeleton />,
   ssr: false
 });
 
+// Lightweight skeleton component for better perceived performance
+function RegistrationFormSkeleton() {
+  return (
+    <div className="max-w-5xl mx-auto px-6 md:px-10">
+      <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-8 animate-pulse"></div>
+      
+      {/* Stepper skeleton */}
+      <div className="mb-4">
+        <div className="hidden md:block relative">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[calc(100%-100px)] h-0.5 bg-gray-200"></div>
+          <div className="relative flex justify-between">
+            {[1,2,3,4,5,6].map((i) => (
+              <div key={i} className="flex flex-col items-center z-10">
+                <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+                <div className="mt-1 h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl px-10 py-4 md:px-12 md:py-6">
+        <div className="space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {[1,2,3,4,5,6].map((i) => (
+              <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RegisterPage() {
   const [submitted, setSubmitted] = useState(false);
+
+  // Preload components on mount for faster subsequent renders
+  useEffect(() => {
+    preloadComponents();
+  }, []);
 
   if (submitted)
     return (

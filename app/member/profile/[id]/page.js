@@ -19,8 +19,10 @@ export default function ViewProfile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        // Use cached data first, then revalidate
         const res = await fetch(`/api/users/${id}`, {
-          cache: 'no-store' // Always fetch fresh data
+          cache: 'force-cache', // Use cached data for faster loading
+          next: { revalidate: 300 } // Revalidate every 5 minutes
         });
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
@@ -70,11 +72,15 @@ export default function ViewProfile() {
               </Link>
             )}
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
-              <img
+              <Image
                 src={profile.photo || '/logo.png'}
                 alt={profile.name}
-                loading="eager"
+                width={200}
+                height={200}
+                priority={true}
                 className="w-50 h-50 rounded-full border-4 border-white dark:border-gray-800 shadow-lg object-cover"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
               />
             </div>
           </div>
@@ -180,11 +186,15 @@ export default function ViewProfile() {
                 <div className="flex flex-col items-center justify-center">
                   {profile.logo && (
                     <div className="text-center">
-                      <img
+                      <Image
                         src={profile.logo}
                         alt={`${profile.companyName} Logo`}
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-contain bg-white rounded-lg border border-gray-200 shadow-md mx-auto mb-3"
                         loading="lazy"
+                        placeholder="blur"
+                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                       />
                       <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Company Logo</p>
                       <p className="text-xs text-gray-500 dark:text-gray-500">{profile.companyName}</p>

@@ -56,7 +56,10 @@ export async function GET(req, { params }) {
       user.logo = getFileUrl(user.logo);
     }
 
-    return NextResponse.json(user);
+    // Add caching headers for better performance
+    const response = NextResponse.json(user);
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
