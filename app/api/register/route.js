@@ -275,11 +275,6 @@ export async function GET(request) {
     // Add local URLs only for visible images
     registrations = await addLocalUrls(registrations);
     
-    // Debug: Log first registration's photo URL
-    if (registrations.length > 0 && registrations[0].photo) {
-      console.log('Sample photo URL:', registrations[0].photo);
-    }
-    
     const response = NextResponse.json({
       registrations,
       pagination: {

@@ -5,8 +5,6 @@ const nextConfig = {
     optimizePackageImports: ['@heroicons/react'],
     // Enable modern bundling
     esmExternals: true,
-    // Optimize CSS
-    optimizeCss: true,
   },
   
   // Image optimization
