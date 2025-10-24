@@ -236,59 +236,15 @@ export async function POST(request) {
 }
 
 // GET: List all registrations (with signed URLs)
-export async function GET(request) {
+export async function GET() {
   try {
     await connectDB();
-    
-    // Parse query parameters for pagination and filtering
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 20;
-    const status = searchParams.get('status') || 'all';
-    const search = searchParams.get('search') || '';
-    
-    // Build query
-    let query = {};
-    if (status !== 'all') {
-      query.status = status;
-    }
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { companyName: { $regex: search, $options: 'i' } },
-        { civilId: { $regex: search, $options: 'i' } }
-      ];
-    }
-    
-    // Get total count for pagination
-    const totalCount = await Registration.countDocuments(query);
-    
-    // Get paginated registrations with optimized fields
-    let registrations = await Registration.find(query)
-      .select('-passportCopy -civilIdCopy -benefitFromIbpc -contributeToIbpc') // Exclude heavy fields
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
-    
-    // Add local URLs only for visible images
+    let registrations = await Registration.find({}).sort({ createdAt: -1 }).lean();
+    // Add local URLs
     registrations = await addLocalUrls(registrations);
-    
-    const response = NextResponse.json({
-      registrations,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount,
-        hasNext: page < Math.ceil(totalCount / limit),
-        hasPrev: page > 1
-      }
-    });
-    
-    // Add caching headers for better performance
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-    return response;
+    const res = NextResponse.json(registrations);
+    res.headers.set('Cache-Control', 'no-store, must-revalidate');
+    return res;
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
@@ -408,8 +364,7 @@ export async function PUT(req) {
     reg.memberId = memberId;
     await reg.save();
 
-    // Send email asynchronously (non-blocking) with timeout
-    const emailPromise = sendMail({
+    await sendMail({
       to: reg.email,
       subject: 'Your New IBPC Kuwait MMS Login Credentials',
       text: `Dear ${reg.name},\n\nWe are excited to inform you that the Indian Business & Professional Council (IBPC) Kuwait has launched its new Membership Management System (MMS) to better serve our valued members.\n\nAs you are already a registered member of IBPC, we have created your account on this new system. Please find your login details below:\n\n• Member ID: ${memberId}\n• Serial No: ${uniqueId}\n• Username: ${username}\n• Password: ${rawPassword}\n• Login Portal: https://mms.ibpckuwait.org\n\n👉 For security reasons, we strongly recommend that you log in at your earliest convenience and reset your password.\n\nWith the new MMS, you can now:\n• Access the Members Directory and view fellow professionals\n• Manage your membership profile easily online\n• Explore exclusive opportunities offered to IBPC members\n\n📩 Need Help?\n• Email: admin@ibpckuwait.org\n• Phone/WhatsApp: +965 9958 6968\n\n🀀 Visit our website: www.ibpckuwait.org for more information and upcoming updates.\n\nWe thank you for being a valued member of IBPC Kuwait and look forward to your active participation on our new platform.\n\nWarm regards,\nMembership Team\nIndian Business & Professional Council (IBPC) Kuwait`,
@@ -494,26 +449,7 @@ export async function PUT(req) {
 </html>`
     });
 
-    // Handle email sending asynchronously with timeout
-    Promise.race([
-      emailPromise,
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Email timeout')), 10000) // 10 second timeout
-      )
-    ]).then(() => {
-      console.log(`✅ Credentials email sent successfully to ${reg.email}`);
-    }).catch((error) => {
-      console.error(`❌ Failed to send credentials email to ${reg.email}:`, error.message);
-      // Log the credentials for manual sending if needed
-      console.log(`📋 Manual credentials for ${reg.name}: Member ID: ${memberId}, Unique ID: ${uniqueId}, Username: ${username}, Password: ${rawPassword}`);
-    });
-
-    return NextResponse.json({ 
-      message: 'Member created successfully. Credentials email is being sent.',
-      memberId,
-      uniqueId,
-      username
-    });
+    return NextResponse.json({ message: 'Member created and credentials sent.' });
   } catch (error) {
     console.error('Approval error:', error.message);
     return NextResponse.json({ message: 'Server error', error: error.message }, { status: 500 });
