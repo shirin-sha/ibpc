@@ -147,7 +147,7 @@ function RegistrationStepper({ onComplete }) {
       alert('Error submitting registration: ' + error.message);
     } finally {
       setIsSubmitting(false);
-      endMeasure();
+   
     }
   };
 
