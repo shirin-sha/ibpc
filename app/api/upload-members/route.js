@@ -403,7 +403,7 @@ export async function POST(request) {
       .list { padding-left: 16px; margin: 8px 0 16px; }
       .list li { margin: 4px 0; }
       .kbd { display: inline-block; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 2px 8px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; }
-      .cta { display: inline-block; background: #061E3E; color: white; text-decoration: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; }
+      .cta { display: inline-block; background: #061E3E; color: white !important; text-decoration: none; padding: 10px 14px; border-radius: 8px; font-weight: 600; }
       .muted { color: #6b7280; font-size: 12px; }
       .footer { text-align: center; color: #6b7280; font-size: 12px; padding: 16px 0 0; }
       .brand { font-weight: 700; }
