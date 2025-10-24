@@ -73,7 +73,7 @@ export default function ViewProfile() {
             )}
             <div className="absolute bottom-0 left-8 transform translate-y-1/2">
               <Image
-                src={profile.photo || '/logo.png'}
+                src={profile.photo || '/userlogo1.png'}
                 alt={profile.name}
                 width={200}
                 height={200}
