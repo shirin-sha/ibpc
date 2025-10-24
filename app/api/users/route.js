@@ -25,58 +25,52 @@ async function addLocalUrls(users) {
   return Array.isArray(users) ? userArray : userArray[0];
 }
 
-// GET: List all users (directory, with search) - Updated to match registration pagination format
+// GET: List all users (directory, with search)
 export async function GET(req) {
   try {
     await connectDB();
-    
-    // Parse query parameters for pagination and filtering
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 20;
-    const search = searchParams.get('search') || '';
-    
-    // Build query
-    let query = { role: { $ne: 'admin' } };
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { mobile: { $regex: search, $options: 'i' } },
-        { memberId: { $regex: search, $options: 'i' } },
-        { companyName: { $regex: search, $options: 'i' } },
-        { profession: { $regex: search, $options: 'i' } }
-      ];
+    const q = searchParams.get('q');
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
+    const size = Math.min(Math.max(parseInt(searchParams.get('size') || '20', 10), 1), 100);
+
+    const baseFilter = { role: { $ne: 'admin' } };
+    let filter = baseFilter;
+    if (q) {
+      filter = {
+        ...baseFilter,
+        $or: [
+          { name: { $regex: q, $options: 'i' } },
+          { mobile: { $regex: q, $options: 'i' } },
+          { uniqueId: { $regex: q, $options: 'i' } },
+          { memberId: { $regex: q, $options: 'i' } }
+        ]
+      };
     }
-    
-    // Get total count for pagination
-    const totalCount = await User.countDocuments(query);
-    
-    // Get paginated users with optimized fields
-    let users = await User.find(query)
+
+    const cursor = User.find(filter)
       .select('name email mobile uniqueId memberId companyName profession designation social photo industrySector')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((page - 1) * size)
+      .limit(size)
       .lean();
-    
-    // Add local URLs only for visible images
-    users = await addLocalUrls(users);
-    
-    const response = NextResponse.json({
-      users,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount,
-        hasNext: page < Math.ceil(totalCount / limit),
-        hasPrev: page > 1
-      }
+
+    const [usersRaw, total] = await Promise.all([
+      cursor,
+      User.countDocuments(filter),
+    ]);
+
+    let users = await addLocalUrls(usersRaw);
+
+    const res = NextResponse.json({
+      data: users,
+      page,
+      size,
+      total,
+      totalPages: Math.ceil(total / size),
     });
-    
-    // Add caching headers for better performance
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
-    return response;
+    res.headers.set('Cache-Control', 'no-store, must-revalidate');
+    return res;
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

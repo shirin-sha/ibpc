@@ -53,9 +53,9 @@ async function sendMail({ to, subject, text, html }) {
 // Generate next serial number
 async function generateSerialNumber() {
   const lastUser = await User.findOne({ uniqueId: { $regex: /^\d{5}$/ } }).sort({ uniqueId: -1 });
-  let nextUniqueId = 10001;
+  let nextUniqueId = 1;
   if (lastUser && lastUser.uniqueId && !isNaN(Number(lastUser.uniqueId))) {
-    nextUniqueId = Math.max(Number(lastUser.uniqueId) + 1, 10001);
+    nextUniqueId = Math.max(Number(lastUser.uniqueId) + 1, 1);
   }
   return String(nextUniqueId).padStart(5, '0');
 }
@@ -271,34 +271,13 @@ export async function POST(request) {
       total: processedData.length
     };
 
-    // Track serial numbers and member IDs used in this upload to avoid duplicates
-    let currentSerialNumber = 10001;
-    let currentMemberIdCounters = {
-      'Corporate Member': 10000,
-      'Individual Member': 10000,
-      'Special Honorary Member': 10000,
-      'Honorary Member': 10000
-    };
+    // Track serial numbers used in this upload to avoid duplicates
+    let currentSerialNumber = 1;
     
     // Get the last serial number from database
     const lastUser = await User.findOne({ uniqueId: { $regex: /^\d{5}$/ } }).sort({ uniqueId: -1 });
     if (lastUser && lastUser.uniqueId && !isNaN(Number(lastUser.uniqueId))) {
-      currentSerialNumber = Math.max(Number(lastUser.uniqueId) + 1, 10001);
-    }
-    
-    // Get the last member IDs for each type
-    const memberTypes = ['Corporate Member', 'Individual Member', 'Special Honorary Member', 'Honorary Member'];
-    for (const type of memberTypes) {
-      let prefix = 'H'; // Default
-      if (type === 'Corporate Member') prefix = 'C';
-      else if (type === 'Individual Member') prefix = 'I';
-      else if (type === 'Special Honorary Member') prefix = 'S';
-      
-      const lastMember = await User.findOne({ memberId: { $regex: new RegExp(`^${prefix}\\d+$`) } }).sort({ memberId: -1 });
-      if (lastMember && lastMember.memberId) {
-        const lastNum = parseInt(lastMember.memberId.substring(1));
-        currentMemberIdCounters[type] = Math.max(lastNum + 1, 10000);
-      }
+      currentSerialNumber = Math.max(Number(lastUser.uniqueId) + 1, 1);
     }
 
     // Process each row
@@ -340,24 +319,13 @@ export async function POST(request) {
           continue;
         }
 
-        // Generate serial number and new member ID
+        // Generate serial number and use member ID from Excel
         const serialNumber = String(currentSerialNumber).padStart(5, '0');
         currentSerialNumber++; // Increment for next member
         
-        // Generate member ID based on membership type
-        const membershipType = String(row.membershipType || 'Individual Member').trim();
-        let memberIdPrefix = 'H'; // Default
-        if (membershipType === 'Corporate Member' || membershipType === 'CORPORATE') {
-          memberIdPrefix = 'C';
-        } else if (membershipType === 'Individual Member' || membershipType === 'INDIVIDUAL') {
-          memberIdPrefix = 'I';
-        } else if (membershipType === 'Special Honorary Member' || membershipType === 'SPECIAL HONORARY') {
-          memberIdPrefix = 'S';
-        }
-        
-        const memberIdNumber = currentMemberIdCounters[membershipType] || currentMemberIdCounters['Individual Member'];
-        const newMemberId = `${memberIdPrefix}${memberIdNumber}`;
-        currentMemberIdCounters[membershipType] = (currentMemberIdCounters[membershipType] || currentMemberIdCounters['Individual Member']) + 1;
+        // Use member ID from Excel file
+        const memberIdFromExcel = String(row.memberId || '').trim();
+        const newMemberId = memberIdFromExcel;
 
         // Generate password
         const rawPassword = Math.random().toString(36).slice(-8);
