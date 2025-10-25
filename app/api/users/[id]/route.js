@@ -11,11 +11,12 @@ import { uploadFile, getFileUrl } from '../../../../lib/localStorage.js';
 // ... (rest of your imports and code)
 
 // Updated uploadToLocal function
-async function uploadToLocal(file, prefix = 'photo') {
+async function uploadToLocal(file, prefix = 'photo', memberId = null, uniqueId = null) {
   const folder = prefix === 'logo' ? 'companylogos' : 'profileimages';
+  const imageType = prefix === 'logo' ? 'logo' : 'profile';
   
   try {
-    const fileUrl = await uploadFile(file, folder);
+    const fileUrl = await uploadFile(file, folder, memberId, uniqueId, imageType);
     return fileUrl; // Return the public URL path
   } catch (error) {
     console.error('Local Upload Error:', error);
@@ -23,8 +24,8 @@ async function uploadToLocal(file, prefix = 'photo') {
   }
 }
 
-// In your PATCH handler, when setting updateData[key] = await uploadToB2(value, key);
-// This will now store the key (e.g., 'uploads/photo-123.jpg') in user.photo or user.logo
+// In your PATCH handler, when setting updateData[key] = await uploadToLocal(value, key);
+// This will now store the key (e.g., '/api/files/profileimages/MEM001-UNQ12345-PROFILE.jpg') in user.photo or user.logo
 
 // app/api/users/[id]/route.js
 // ... (rest of your code)
@@ -129,7 +130,12 @@ export async function PATCH(req, { params }) {
         // Handle file uploads with local storage (only for multipart form data)
         if (value && typeof value === 'object' && 'size' in value && 'type' in value && value.size > 0) {
           try {
-            const fileUrl = await uploadToLocal(value, key);
+            // Get member ID and unique ID (serial number) from the user being updated
+            const user = await User.findById(id).select('memberId uniqueId');
+            const memberId = user?.memberId || id;
+            const uniqueId = user?.uniqueId || `UNQ${Date.now()}`;
+            
+            const fileUrl = await uploadToLocal(value, key, memberId, uniqueId);
             updateData[key] = fileUrl;
           } catch (error) {
             console.error(`Error uploading ${key}:`, error);
