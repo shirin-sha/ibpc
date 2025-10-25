@@ -7,7 +7,6 @@ import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onPageChange = () => {}, size = 20, onSizeChange = () => {}, totalCount = 0 }) {
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Handle sorting
   const handleSort = (field) => {
@@ -19,30 +18,15 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
     }
   };
 
-  // Filter members based on search query
-  const filteredMembers = useMemo(() => {
-    const query = searchQuery.toLowerCase();
-    return (members || []).filter((member) => {
-      return (
-        member.name?.toLowerCase().includes(query) ||
-        member.mobile?.toLowerCase().includes(query) ||
-        member._id?.toLowerCase().includes(query) ||
-        member.email?.toLowerCase().includes(query) ||
-        member.companyName?.toLowerCase().includes(query) ||
-        member.designation?.toLowerCase().includes(query)
-      );
-    });
-  }, [members, searchQuery]);
-
   // Sort members
   const sortedMembers = useMemo(() => {
-    const list = [...filteredMembers];
+    const list = [...(members || [])];
     return list.sort((a, b) => {
       const aValue = a[sortField]?.toString().toLowerCase() || '';
       const bValue = b[sortField]?.toString().toLowerCase() || '';
       return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     });
-  }, [filteredMembers, sortField, sortDirection]);
+  }, [members, sortField, sortDirection]);
 
   // Sort Icon Component
   const SortIcon = ({ field }) => {
@@ -88,23 +72,6 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
             Members ({sortedMembers.length}{size === 'all' && totalCount ? ` of ${totalCount}` : ''})
           </h2>
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                placeholder="Search in page"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400 focus:border-transparent transition-all"
-              />
-              <svg
-                className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
             {isAdmin && (
               <>
                 <div className="flex items-center gap-2">
@@ -162,13 +129,13 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                       <SortIcon field="phone" />
                     </div>
                   </th>
-                  <th onClick={() => handleSort('email')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <th onClick={() => handleSort('email')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors hidden md:table-cell">
                     <div className="flex items-center">
                       <span>Email</span>
                       <SortIcon field="email" />
                     </div>
                   </th>
-                  <th onClick={() => handleSort('companyName')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <th onClick={() => handleSort('companyName')} className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors hidden lg:table-cell">
                     <div className="flex items-center">
                       <span>Company</span>
                       <SortIcon field="companyName" />
@@ -181,7 +148,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Social</th>
-                  <th className="px-6 py-3 text-center text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-center text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider sticky right-0 bg-gray-50 dark:bg-gray-700 z-10 border-l border-gray-200 dark:border-gray-600">Actions</th>
                 </>
               ) : (
                 <>
@@ -189,9 +156,9 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Designation</th>
                   <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Company</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Industry Sector</th>
-                  <th className="px-6 py-3 text-center text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider hidden md:table-cell">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider hidden lg:table-cell">Industry Sector</th>
+                  <th className="px-6 py-3 text-center text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider sticky right-0 bg-gray-50 dark:bg-gray-700 z-10 border-l border-gray-200 dark:border-gray-600">Actions</th>
                 </>
               )}
             </tr>
@@ -219,7 +186,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-                    {searchQuery ? 'No members match your search' : 'No members found'}
+                    No members found
                   </h3>
                 </td>
               </tr>
@@ -253,16 +220,18 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {member.name}
-                            </div>
+                            <Link href={`/member/profile/${member._id}`}>
+                              <div className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer transition-colors hover:underline">
+                                {member.name}
+                              </div>
+                            </Link>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.memberId}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.mobile}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">{member.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">{member.companyName}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.profession}</td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-2">
@@ -302,7 +271,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white dark:bg-gray-800 z-10 border-l border-gray-200 dark:border-gray-600">
                         <div className="flex justify-center space-x-3">
                           <Link href={`/member/profile/${member._id}`}>
                             <div className="text-blue-500 hover:text-blue-700 cursor-pointer transition-colors">
@@ -344,17 +313,19 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {member.name}
-                            </div>
+                            <Link href={`/member/profile/${member._id}`}>
+                              <div className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer transition-colors hover:underline">
+                                {member.name}
+                              </div>
+                            </Link>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.profession}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.companyName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{member.industrySector || 'N/A'}</td>
-                      <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden md:table-cell">{member.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden lg:table-cell">{member.industrySector || 'N/A'}</td>
+                      <td className="px-6 py-4 text-center whitespace-nowrap sticky right-0 bg-white dark:bg-gray-800 z-10 border-l border-gray-200 dark:border-gray-600">
                         <div className="flex justify-center space-x-3">
                           <Link href={`/member/profile/${member._id}`}>
                             <div className="text-blue-500 hover:text-blue-700 cursor-pointer transition-colors">
