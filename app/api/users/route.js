@@ -99,8 +99,18 @@ export async function PATCH(req) {
     await connectDB();
     const { id, updates, role } = await req.json();
 
-    // Define editable fields
-    const editableByUser = ['companyBrief', 'about', 'logo', 'social'];
+    // Define editable fields for members
+    const editableByUser = [
+      'name', 'mobile', 'officePhone', 'address', 'passportNumber', 'civilId',
+      'alternateMobile', 'alternateEmail', 'companyName', 'profession', 'businessActivity',
+      'sponsorName', 'nationality', 'industrySector', 'alternateIndustrySector',
+      'companyAddress', 'companyWebsite', 'benefitFromIbpc', 'contributeToIbpc', 'proposer1',
+      'proposer2', 'companyBrief', 'about', 'logo', 'photo', 'social'
+    ];
+    
+    // Admin-only fields (cannot be edited by members)
+    const adminOnlyFields = ['memberId', 'uniqueId', 'membershipValidity', 'role'];
+    
     let allowedFields = role === 'admin'
       ? Object.keys(User.schema.paths).filter(f => f !== 'password' && f !== '_id' && f !== '__v')
       : editableByUser;

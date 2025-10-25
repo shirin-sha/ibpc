@@ -20,8 +20,8 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
     sponsorName: user.sponsorName || '',
     address: user.address || '',
     officePhone: user.officePhone || '',
-    benefit: user.benefit || '',
-    contribution: user.contribution || '',
+    benefitFromIbpc: user.benefitFromIbpc || '',
+    contributeToIbpc: user.contributeToIbpc || '',
     proposer1: user.proposer1 || '',
     proposer2: user.proposer2 || '',
     // Additional new fields
@@ -64,39 +64,80 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    const data = new FormData();
-
-    // Append form fields
-    for (const key in formData) {
-      if (['linkedin', 'instagram', 'twitter', 'facebook'].includes(key)) {
-        data.append(`social.${key}`, formData[key]);
-      } else {
-        // This dynamic loop handles all fields, including the new ones
-        data.append(key, formData[key]);
-      }
-    }
-
-    // Append files
-    if (files.photo) data.append('photo', files.photo);
-    if (files.logo) data.append('logo', files.logo);
-
+    
     try {
-      const response = await fetch(`/api/users/${user._id}`, {
-        method: 'PATCH',
-        body: data,
-      });
+      // Check if there are any files to upload first
+      const hasFiles = files.photo || files.logo;
+      
+      if (hasFiles) {
+        // Use FormData for file uploads
+        const data = new FormData();
 
-      if (response.ok) {
-        alert('Profile updated successfully!');
-        if (onSaveSuccess) {
-          onSaveSuccess(); // Call the refetch function
+        // Append form fields
+        for (const key in formData) {
+          if (['linkedin', 'instagram', 'twitter', 'facebook'].includes(key)) {
+            data.append(`social.${key}`, formData[key]);
+          } else {
+            data.append(key, formData[key]);
+          }
         }
-        setFiles({ photo: null, logo: null });
+
+        // Append files
+        if (files.photo) data.append('photo', files.photo);
+        if (files.logo) data.append('logo', files.logo);
+
+        const response = await fetch(`/api/users/${user._id}`, {
+          method: 'PATCH',
+          body: data,
+        });
+
+        if (response.ok) {
+          alert('Profile updated successfully!');
+          if (onSaveSuccess) {
+            onSaveSuccess();
+          }
+          setFiles({ photo: null, logo: null });
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.message}`);
+        }
       } else {
-        const error = await response.json();
-        alert(`Error: ${error.message}`);
+        // Use JSON for faster updates when no files
+        const updateData = { ...formData };
+        
+        // Handle social links
+        const socialLinks = {};
+        ['linkedin', 'instagram', 'twitter', 'facebook'].forEach(key => {
+          if (updateData[key]) {
+            socialLinks[key] = updateData[key];
+            delete updateData[key];
+          }
+        });
+        
+        if (Object.keys(socialLinks).length > 0) {
+          updateData.social = socialLinks;
+        }
+
+        const response = await fetch(`/api/users/${user._id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateData),
+        });
+
+        if (response.ok) {
+          alert('Profile updated successfully!');
+          if (onSaveSuccess) {
+            onSaveSuccess();
+          }
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.message}`);
+        }
       }
     } catch (error) {
+      console.error('Profile update error:', error);
       alert('An unexpected error occurred.');
     } finally {
       setIsSaving(false);
@@ -129,24 +170,24 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
               />
             </div>
             
-            <div className="sm:col-span-3"><FormField label="Full Name" name="name" value={formData.name} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Full Name" name="name" value={formData.name} onChange={handleChange} /></div>
             <div className="sm:col-span-3"><FormField label="Email" name="email" value={formData.email} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Office Phone" name="officePhone" value={formData.officePhone} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-6"><TextAreaField label="Address in Kuwait" name="address" value={formData.address} onChange={handleChange} rows={2} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Office Phone" name="officePhone" value={formData.officePhone} onChange={handleChange} /></div>
+            <div className="sm:col-span-6"><TextAreaField label="Address in Kuwait" name="address" value={formData.address} onChange={handleChange} rows={2} /></div>
             <div className="sm:col-span-3"><FormField label="Member ID" name="memberId" value={formData.memberId} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Unique ID" name="uniqueId" value={formData.uniqueId} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Passport Number" name="passportNumber" value={formData.passportNumber} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Kuwait Civil ID Number" name="civilId" value={formData.civilId} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Serial No" name="uniqueId" value={formData.uniqueId} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Passport Number" name="passportNumber" value={formData.passportNumber} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Kuwait Civil ID Number" name="civilId" value={formData.civilId} onChange={handleChange} /></div>
             
             {/* New: Alternate Mobile Field */}
             <div className="sm:col-span-3">
-              <FormField label="Alternate Mobile (Optional)" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} disabled={isMember} />
+              <FormField label="Alternate Mobile (Optional)" name="alternateMobile" value={formData.alternateMobile} onChange={handleChange} />
             </div>
             
             {/* New: Alternate Email Field */}
             <div className="sm:col-span-3">
-              <FormField label="Alternate Email (Optional)" name="alternateEmail" value={formData.alternateEmail} onChange={handleChange} disabled={isMember} />
+              <FormField label="Alternate Email (Optional)" name="alternateEmail" value={formData.alternateEmail} onChange={handleChange} />
             </div>
 
             {/* Photo Upload */}
@@ -163,10 +204,10 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-6 pt-8">
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Company & Profession</h2>
             </div>
-            <div className="sm:col-span-3"><FormField label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Profession & Designation" name="profession" value={`${formData.profession}`} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Type of Business Activity" name="businessActivity" value={formData.businessActivity} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Kuwaiti Sponsor/Partner Name" name="sponsorName" value={formData.sponsorName} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="Company Name" name="companyName" value={formData.companyName} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Profession & Designation" name="profession" value={`${formData.profession}`} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Type of Business Activity" name="businessActivity" value={formData.businessActivity} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Kuwaiti Sponsor/Partner Name" name="sponsorName" value={formData.sponsorName} onChange={handleChange} /></div>
             
             {/* New: Nationality Field */}
             <div className="sm:col-span-3">
@@ -175,8 +216,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
                 name="nationality"
                 value={formData.nationality}
                 onChange={handleChange}
-                disabled={isMember}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900"
               >
                 <option value="">Select Nationality</option>
                 <option value="INDIAN">INDIAN</option>
@@ -210,8 +250,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
                 name="industrySector"
                 value={formData.industrySector}
                 onChange={handleChange}
-                disabled={isMember}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900"
               >
                 <option value="">Select Industry Sector</option>
                 {INDUSTRY_SECTORS.map(sector => (
@@ -227,8 +266,7 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
                 name="alternateIndustrySector"
                 value={formData.alternateIndustrySector}
                 onChange={handleChange}
-                disabled={isMember}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-gray-500 focus:border-gray-500 placeholder-gray-400 text-gray-900"
               >
                 <option value="">Select Alternate Industry Sector</option>
                 {INDUSTRY_SECTORS.map(sector => (
@@ -239,12 +277,12 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             
             {/* New: Company Address Field */}
             <div className="sm:col-span-6">
-              <TextAreaField label="Company Address" name="companyAddress" value={formData.companyAddress} onChange={handleChange} rows={2} disabled={isMember} />
+              <TextAreaField label="Company Address" name="companyAddress" value={formData.companyAddress} onChange={handleChange} rows={2} />
             </div>
             
             {/* New: Company Website Field */}
             <div className="sm:col-span-3">
-              <FormField label="Company Website" name="companyWebsite" value={formData.companyWebsite} onChange={handleChange} disabled={isMember} />
+              <FormField label="Company Website" name="companyWebsite" value={formData.companyWebsite} onChange={handleChange} />
             </div>
             
             {/* Logo Upload */}
@@ -267,15 +305,15 @@ export default function ProfileForm({ user, isAdmin, onSaveSuccess  }) {
             <div className="sm:col-span-6 pt-8">
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Application Details</h2>
             </div>
-            <div className="sm:col-span-6"><TextAreaField label="How would you benefit from IBPC membership?" name="benefit" value={formData.benefitFromIbpc} onChange={handleChange} rows={3} disabled={isMember} /></div>
-            <div className="sm:col-span-6"><TextAreaField label="How can you contribute to IBPC's objectives?" name="contribution" value={formData.contributeToIbpc} onChange={handleChange} rows={3} disabled={isMember} /></div>
+            <div className="sm:col-span-6"><TextAreaField label="How would you benefit from IBPC membership?" name="benefitFromIbpc" value={formData.benefitFromIbpc} onChange={handleChange} rows={3} /></div>
+            <div className="sm:col-span-6"><TextAreaField label="How can you contribute to IBPC's objectives?" name="contributeToIbpc" value={formData.contributeToIbpc} onChange={handleChange} rows={3} /></div>
 
             {/* Sponsorship Details (from registration) */}
             <div className="sm:col-span-6 pt-8">
               <h2 className="text-xl font-semibold leading-7 text-gray-900">Sponsorship</h2>
             </div>
-            <div className="sm:col-span-3"><FormField label="First IBPC Member Proposer" name="proposer1" value={formData.proposer1} onChange={handleChange} disabled={isMember} /></div>
-            <div className="sm:col-span-3"><FormField label="Second IBPC Member Proposer" name="proposer2" value={formData.proposer2} onChange={handleChange} disabled={isMember} /></div>
+            <div className="sm:col-span-3"><FormField label="First IBPC Member Proposer" name="proposer1" value={formData.proposer1} onChange={handleChange} /></div>
+            <div className="sm:col-span-3"><FormField label="Second IBPC Member Proposer" name="proposer2" value={formData.proposer2} onChange={handleChange} /></div>
 
             {/* Social Media Links */}
             <div className="sm:col-span-6 pt-8">

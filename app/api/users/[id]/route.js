@@ -87,11 +87,33 @@ export async function PATCH(req, { params }) {
   }
 
   try {
-    // Parse multipart form data
-    const formData = await req.formData();
+    // Check content type to determine how to parse the request
+    const contentType = req.headers.get('content-type');
+    let formData;
+    
+    if (contentType && contentType.includes('application/json')) {
+      // Handle JSON request (faster for text-only updates)
+      const jsonData = await req.json();
+      formData = new Map();
+      Object.entries(jsonData).forEach(([key, value]) => {
+        formData.set(key, value);
+      });
+    } else {
+      // Handle multipart form data (for file uploads)
+      formData = await req.formData();
+    }
     
     // Define which fields members can edit
-    const memberEditableFields = ['companyBrief', 'about', 'linkedin', 'instagram', 'twitter', 'facebook'];
+    const memberEditableFields = [
+      'name', 'mobile', 'officePhone', 'address', 'passportNumber', 'civilId',
+      'alternateMobile', 'alternateEmail', 'companyName', 'profession', 'businessActivity',
+      'sponsorName', 'nationality', 'industrySector', 'alternateIndustrySector',
+      'companyAddress', 'companyWebsite', 'benefitFromIbpc', 'contributeToIbpc', 'proposer1',
+      'proposer2', 'companyBrief', 'about', 'linkedin', 'instagram', 'twitter', 'facebook'
+    ];
+    
+    // Admin-only fields (cannot be edited by members)
+    const adminOnlyFields = ['memberId', 'uniqueId', 'membershipValidity', 'role', 'email', 'membershipType'];
     
     // Prepare update object
     const updateData = {};
@@ -104,7 +126,7 @@ export async function PATCH(req, { params }) {
         const socialKey = key.split('.')[1];
         socialLinks[socialKey] = value;
       } else if (key === 'photo' || key === 'logo') {
-        // Handle file uploads with local storage
+        // Handle file uploads with local storage (only for multipart form data)
         if (value && typeof value === 'object' && 'size' in value && 'type' in value && value.size > 0) {
           try {
             const fileUrl = await uploadToLocal(value, key);
@@ -116,6 +138,11 @@ export async function PATCH(req, { params }) {
               details: error.message 
             }, { status: 500 });
           }
+        }
+      } else if (key === 'social') {
+        // Handle social object from JSON request
+        if (typeof value === 'object' && value !== null) {
+          Object.assign(socialLinks, value);
         }
       } else {
         // Handle other fields - apply role-based restrictions
@@ -130,16 +157,18 @@ export async function PATCH(req, { params }) {
       updateData.social = socialLinks;
     }
 
-    // Debug logging
-    console.log('Update data being sent to database:', updateData);
-    console.log('About field value:', updateData.about);
-
-    // Update user
-    const updatedUser = await User.findByIdAndUpdate(
+    // Update user with timeout
+    const updatePromise = User.findByIdAndUpdate(
       id, 
       updateData, 
       { new: true, runValidators: true }
     );
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database operation timeout')), 10000)
+    );
+    
+    const updatedUser = await Promise.race([updatePromise, timeoutPromise]);
 
     if (!updatedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
