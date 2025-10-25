@@ -15,18 +15,18 @@ const MembersTable = dynamic(() => import('@/components/MembersTable'), {
 
 export default function AdminMembers() {
   const [members, setMembers] = useState([]);
-  const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const { data: session } = useSession();
 
   useEffect(() => {
     let isCancelled = false;
     async function fetchPage(currentPage, currentSize) {
-      const res = await fetch(`/api/users?page=${currentPage}&size=${currentSize}${query ? `&q=${encodeURIComponent(query)}` : ''}`);
+      const res = await fetch(`/api/users?page=${currentPage}&size=${currentSize}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}`);
       if (!res.ok) throw new Error('Failed to fetch users');
       return res.json();
     }
@@ -34,6 +34,7 @@ export default function AdminMembers() {
     async function load() {
       try {
         setLoading(true);
+        
         if (size === 'all') {
           // Fetch first page with max size 100 to learn totals
           const first = await fetchPage(1, 100);
@@ -78,13 +79,19 @@ export default function AdminMembers() {
     return () => {
       isCancelled = true;
     };
-  }, [query, page, size]);
+  }, [page, size, searchQuery]);
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setPage(1); // Reset to first page when searching
+  };
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         Manage Members
       </h1>
+      
       
       <MembersTable
         members={members}
@@ -96,6 +103,7 @@ export default function AdminMembers() {
         size={size}
         onSizeChange={(newSize) => { setPage(1); setSize(newSize); }}
         totalCount={total}
+        onSearch={handleSearch}
       />
     </div>
   );

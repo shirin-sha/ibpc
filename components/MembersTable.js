@@ -4,9 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
 
-function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onPageChange = () => {}, size = 20, onSizeChange = () => {}, totalCount = 0 }) {
+function MembersTable({ members, isAdmin, loading, page = 1, totalPages = 1, onPageChange = () => {}, size = 20, onSizeChange = () => {}, totalCount = 0, onSearch = () => {} }) {
   const [sortField, setSortField] = useState('name');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Handle sorting
   const handleSort = (field) => {
@@ -18,7 +19,14 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
     }
   };
 
-  // Sort members
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    onSearch(query); // Pass search query to parent component
+  };
+
+  // Sort members (no more client-side filtering)
   const sortedMembers = useMemo(() => {
     const list = [...(members || [])];
     return list.sort((a, b) => {
@@ -72,6 +80,25 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
             Members ({sortedMembers.length}{size === 'all' && totalCount ? ` of ${totalCount}` : ''})
           </h2>
           <div className="flex items-center gap-3">
+            {/* Search Input */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search members..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-400 focus:border-transparent transition-all"
+              />
+              <svg 
+                className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            
             {isAdmin && (
               <>
                 <div className="flex items-center gap-2">
@@ -186,7 +213,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
-                    No members found
+                    {searchQuery ? 'No members match your search' : 'No members found'}
                   </h3>
                 </td>
               </tr>
@@ -346,7 +373,7 @@ function MembersTable({ members, isAdmin ,loading, page = 1, totalPages = 1, onP
       {/* Footer pagination (duplicate for convenience on small screens) */}
       {size !== 'all' && (
         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
-          <span className="text-xs text-gray-500">Showing {members?.length} {members?.length === 1 ? 'result' : 'results'}</span>
+          <span className="text-xs text-gray-500">Showing {sortedMembers?.length} {sortedMembers?.length === 1 ? 'result' : 'results'}</span>
           <div className="flex items-center gap-2">
             <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(1)}>{'<<'}</PageButton>
             <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>{'Prev'}</PageButton>

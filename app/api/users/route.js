@@ -41,9 +41,17 @@ export async function GET(req) {
         ...baseFilter,
         $or: [
           { name: { $regex: q, $options: 'i' } },
+          { email: { $regex: q, $options: 'i' } },
           { mobile: { $regex: q, $options: 'i' } },
           { uniqueId: { $regex: q, $options: 'i' } },
-          { memberId: { $regex: q, $options: 'i' } }
+          { memberId: { $regex: q, $options: 'i' } },
+          { companyName: { $regex: q, $options: 'i' } },
+          { profession: { $regex: q, $options: 'i' } },
+          { industrySector: { $regex: q, $options: 'i' } },
+          { alternateIndustrySector: { $regex: q, $options: 'i' } },
+          { businessActivity: { $regex: q, $options: 'i' } },
+          { nationality: { $regex: q, $options: 'i' } },
+          { sponsorName: { $regex: q, $options: 'i' } }
         ]
       };
     }
