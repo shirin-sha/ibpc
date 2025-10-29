@@ -271,11 +271,11 @@ export async function PUT(req) {
       return NextResponse.json({ error: 'Already approved' }, { status: 400 });
     }
 
-    // Generate next 5-digit uniqueId (numbers only, start at 10001)
+    // Generate next 5-digit uniqueId (numbers only, start at 00001)
     const lastUser = await User.findOne({ uniqueId: { $regex: /^\d{5}$/ } }).sort({ uniqueId: -1 });
-    let nextUniqueId = 10001;
+    let nextUniqueId = 1;
     if (lastUser && lastUser.uniqueId && !isNaN(Number(lastUser.uniqueId))) {
-      nextUniqueId = Math.max(Number(lastUser.uniqueId) + 1, 10001);
+      nextUniqueId = Math.max(Number(lastUser.uniqueId) + 1, 1);
     }
     const uniqueId = String(nextUniqueId).padStart(5, '0');
 
