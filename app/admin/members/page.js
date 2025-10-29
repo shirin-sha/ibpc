@@ -92,8 +92,9 @@ export default function AdminMembers() {
   const handleDownload = async () => {
     try {
       setDownloading(true);
+      // Always fetch ALL members for download (ignore current search/filter)
       const fetchPage = async (currentPage, currentSize) => {
-        const res = await fetch(`/api/users?page=${currentPage}&size=${currentSize}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ''}`);
+        const res = await fetch(`/api/users?page=${currentPage}&size=${currentSize}`);
         if (!res.ok) throw new Error('Failed to fetch users');
         return res.json();
       };
