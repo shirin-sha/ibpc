@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import React from 'react';
 import Link from 'next/link';
-import { EyeIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 function MembersTable({ members, isAdmin, loading, page = 1, totalPages = 1, onPageChange = () => {}, size = 20, onSizeChange = () => {}, totalCount = 0, onSearch = () => {} }) {
   const [sortField, setSortField] = useState('name');
@@ -77,7 +77,7 @@ function MembersTable({ members, isAdmin, loading, page = 1, totalPages = 1, onP
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Members ({sortedMembers.length}{size === 'all' && totalCount ? ` of ${totalCount}` : ''})
+            Members 
           </h2>
           <div className="flex items-center gap-3">
             {/* Search Input */}
@@ -115,13 +115,21 @@ function MembersTable({ members, isAdmin, loading, page = 1, totalPages = 1, onP
                 </div>
                 {size !== 'all' && (
                   <div className="flex items-center gap-2">
-                    <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(1)}>{'<<'}</PageButton>
-                    <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>{'Prev'}</PageButton>
+                    <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>
+                      <span className="flex items-center gap-1">
+                        <ChevronLeftIcon className="w-4 h-4" aria-hidden="true" />
+                        <span className="sr-only">Previous</span>
+                      </span>
+                    </PageButton>
                     <span className="text-sm text-gray-600 dark:text-gray-300">
                       Page {page} of {totalPages}
                     </span>
-                    <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>{'Next'}</PageButton>
-                    <PageButton disabled={!canNext || loading} onClick={() => onPageChange(totalPages)}>{'>>'}</PageButton>
+                    <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>
+                      <span className="flex items-center gap-1">
+                        <span className="sr-only">Next</span>
+                        <ChevronRightIcon className="w-4 h-4" aria-hidden="true" />
+                      </span>
+                    </PageButton>
                   </div>
                 )}
               </>
@@ -375,13 +383,21 @@ function MembersTable({ members, isAdmin, loading, page = 1, totalPages = 1, onP
         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex items-center justify-between">
           <span className="text-xs text-gray-500">Showing {sortedMembers?.length} {sortedMembers?.length === 1 ? 'result' : 'results'}</span>
           <div className="flex items-center gap-2">
-            <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(1)}>{'<<'}</PageButton>
-            <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>{'Prev'}</PageButton>
+            <PageButton disabled={!canPrev || loading} onClick={() => onPageChange(page - 1)}>
+              <span className="flex items-center gap-1">
+                <ChevronLeftIcon className="w-4 h-4" aria-hidden="true" />
+                <span className="sr-only">Previous</span>
+              </span>
+            </PageButton>
             <span className="text-sm text-gray-600 dark:text-gray-300">
               Page {page} of {totalPages}
             </span>
-            <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>{'Next'}</PageButton>
-            <PageButton disabled={!canNext || loading} onClick={() => onPageChange(totalPages)}>{'>>'}</PageButton>
+            <PageButton disabled={!canNext || loading} onClick={() => onPageChange(page + 1)}>
+              <span className="flex items-center gap-1">
+                <span className="sr-only">Next</span>
+                <ChevronRightIcon className="w-4 h-4" aria-hidden="true" />
+              </span>
+            </PageButton>
           </div>
         </div>
       )}

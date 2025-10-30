@@ -37,34 +37,19 @@ export async function GET(req) {
     const baseFilter = { role: { $ne: 'admin' } };
     let filter = baseFilter;
     if (q) {
-      filter = {
-        ...baseFilter,
-        $or: [
-          { name: { $regex: q, $options: 'i' } },
-          { email: { $regex: q, $options: 'i' } },
-          { mobile: { $regex: q, $options: 'i' } },
-          { uniqueId: { $regex: q, $options: 'i' } },
-          { memberId: { $regex: q, $options: 'i' } },
-          { companyName: { $regex: q, $options: 'i' } },
-          { profession: { $regex: q, $options: 'i' } },
-          { industrySector: { $regex: q, $options: 'i' } },
-          { alternateIndustrySector: { $regex: q, $options: 'i' } },
-          { businessActivity: { $regex: q, $options: 'i' } },
-          { nationality: { $regex: q, $options: 'i' } },
-          { sponsorName: { $regex: q, $options: 'i' } }
-        ]
-      };
+      // Prefer text index search when available; fallback to regex if needed
+      filter = { ...baseFilter, $text: { $search: q } };
     }
 
-    const cursor = User.find(filter)
+    const findQuery = User.find(filter)
       .select('name email mobile uniqueId memberId companyName profession designation social photo industrySector')
-      .sort({ createdAt: -1 })
+      .sort(q ? { score: { $meta: 'textScore' }, createdAt: -1, _id: -1 } : { createdAt: -1, _id: -1 })
       .skip((page - 1) * size)
       .limit(size)
       .lean();
 
     const [usersRaw, total] = await Promise.all([
-      cursor,
+      findQuery,
       User.countDocuments(filter),
     ]);
 
@@ -77,7 +62,8 @@ export async function GET(req) {
       total,
       totalPages: Math.ceil(total / size),
     });
-    res.headers.set('Cache-Control', 'no-store, must-revalidate');
+    // Allow brief caching to improve UX when navigating pages
+    res.headers.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=60');
     return res;
   } catch (error) {
     console.error('GET Error:', error);

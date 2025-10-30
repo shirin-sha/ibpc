@@ -20,6 +20,7 @@ export default function Directory() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [pageCache, setPageCache] = useState({}); // key: `${page}|${size}|${searchQuery}` -> data
   const [searchQuery, setSearchQuery] = useState('');
   const { data: session } = useSession();
 
@@ -33,7 +34,27 @@ export default function Directory() {
 
     async function load() {
       try {
-        setLoading(true);
+        const cacheKey = `${page}|${size}|${searchQuery}`;
+        const cached = pageCache[cacheKey];
+        if (cached) {
+          // Show cached instantly and skip refetch
+          setMembers(cached.data);
+          setTotalPages(cached.totalPages);
+          setTotal(cached.total);
+          setLoading(false);
+          // Prefetch adjacent pages
+          const nextKey = `${page + 1}|${size}|${searchQuery}`;
+          const prevKey = `${Math.max(1, page - 1)}|${size}|${searchQuery}`;
+          if (page < (cached.totalPages || 1) && !pageCache[nextKey]) {
+            fetchPage(page + 1, size).then((p) => setPageCache(prev => ({ ...prev, [nextKey]: p }))).catch(() => {});
+          }
+          if (page > 1 && !pageCache[prevKey]) {
+            fetchPage(page - 1, size).then((p) => setPageCache(prev => ({ ...prev, [prevKey]: p }))).catch(() => {});
+          }
+          return; // important: do not fall through
+        } else {
+          setLoading(true);
+        }
         
         if (size === 'all') {
           // Fetch first page with max size 100 to learn totals
@@ -62,6 +83,16 @@ export default function Directory() {
           setMembers(payload.data || []);
           setTotalPages(payload.totalPages || 1);
           setTotal(payload.total || 0);
+          setPageCache(prev => ({ ...prev, [cacheKey]: payload }));
+          // Prefetch adjacent pages
+          const nextKey = `${page + 1}|${size}|${searchQuery}`;
+          const prevKey = `${Math.max(1, page - 1)}|${size}|${searchQuery}`;
+          if (page < (payload.totalPages || 1) && !pageCache[nextKey]) {
+            fetchPage(page + 1, size).then((p) => setPageCache(prev => ({ ...prev, [nextKey]: p }))).catch(() => {});
+          }
+          if (page > 1 && !pageCache[prevKey]) {
+            fetchPage(page - 1, size).then((p) => setPageCache(prev => ({ ...prev, [prevKey]: p }))).catch(() => {});
+          }
         }
       } catch (err) {
         if (!isCancelled) {
